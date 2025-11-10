@@ -24,8 +24,11 @@ logger = logging.getLogger(__name__)
 # ============================================================
 app = FastAPI(
     title="Legal Semantic Pipeline",
-    version="1.1.0",
-    description="Semantic chunking, OCR PDF ingestion, and Qdrant integration for legal documents."
+    version="1.2.0",
+    description=(
+        "⚖️ A minimal semantic legal document pipeline with OCR-PDF ingestion, "
+        "Qdrant vector search, and frontend interface."
+    ),
 )
 
 # ============================================================
@@ -33,41 +36,42 @@ app = FastAPI(
 # ============================================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ⚠️ In production, restrict to your frontend URL
+    allow_origins=["*"],  # ⚠️ Restrict this in production (e.g. ["https://yourdomain.com"])
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ============================================================
-# Frontend Setup (Templates + Static Files)
+# Frontend Setup (Templates + Static)
 # ============================================================
 templates = Jinja2Templates(directory="app/templates")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-@app.get("/")
+@app.get("/", include_in_schema=False)
 async def serve_frontend(request: Request):
     """
-    Serves the minimal upload HTML UI.
+    Serves the minimal upload + query HTML UI.
     """
     return templates.TemplateResponse("index.html", {"request": request})
 
 # ============================================================
-# Routers
+# Routers (API Endpoints)
 # ============================================================
-# ✅ Existing API Endpoints
+# ✅ Module 3 core endpoints: ingest-document & query-twin
 app.include_router(endpoints.router, prefix="/api/v1/module3")
 
-# ✅ New Upload (PDF + OCR) Endpoint
+# ✅ Upload route (PDF + OCR ingestion)
 app.include_router(upload_routes.router)
 
 # ============================================================
-# Startup Event - Initialize Qdrant Collection
+# Startup Event: Qdrant Initialization
 # ============================================================
 @app.on_event("startup")
 async def startup_event():
     """
-    Ensures Qdrant collection exists when the API starts up.
+    Runs when the API starts up. Verifies Qdrant connection and
+    ensures the vector collection exists.
     """
     try:
         logger.info("[INIT] Checking Qdrant connection...")
@@ -77,7 +81,7 @@ async def startup_event():
             collection_name=settings.COLLECTION_NAME,
         )
 
-        # Create collection asynchronously
+        # Create collection asynchronously (non-blocking)
         await asyncio.to_thread(vector_store.create_collection)
         logger.info(f"[INIT] ✅ Qdrant collection '{settings.COLLECTION_NAME}' is ready.")
     except Exception as e:
@@ -86,9 +90,9 @@ async def startup_event():
 # ============================================================
 # Health Check Endpoint
 # ============================================================
-@app.get("/health")
+@app.get("/health", tags=["System"])
 async def health_check():
     """
-    Simple API health endpoint.
+    Simple API health endpoint to verify the backend is running.
     """
     return {"status": "ok", "message": "API is running successfully 🚀"}

@@ -1,56 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Legal Document Uploader</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Legal Semantic Pipeline</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f7f7f9;
+      margin: 40px;
+      color: #333;
+    }
+    h1 {
+      color: #0078d4;
+      margin-bottom: 10px;
+    }
+    section {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 25px;
+    }
+    label {
+      font-weight: 600;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background-color: #0078d4;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover {
+      background-color: #005ea0;
+    }
+    .result {
+      background: #f0f0f5;
+      border-radius: 6px;
+      padding: 10px;
+      margin-top: 10px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 flex flex-col items-center justify-center h-screen">
+<body>
+  <h1>⚖️ Legal Semantic Pipeline</h1>
 
-    <div class="bg-white p-8 rounded-2xl shadow-md w-96 text-center">
-        <h1 class="text-2xl font-bold mb-4">Upload Legal PDF</h1>
+  <!-- Upload PDF Section -->
+  <section>
+    <h2>📄 Upload Legal PDF</h2>
+    <input type="file" id="pdfFile" accept=".pdf" />
+    <button onclick="uploadPDF()">Upload & Process</button>
+    <p id="uploadStatus"></p>
+  </section>
 
-        <input id="pdfFile" type="file" accept="application/pdf"
-               class="border border-gray-300 p-2 rounded w-full mb-4"/>
+  <!-- Query Twin Section -->
+  <section>
+    <h2>🔍 Query Legal Twin</h2>
+    <label for="queryText">Enter your query:</label>
+    <textarea id="queryText" rows="3" placeholder="e.g. trademark infringement appeal..."></textarea>
+    <button onclick="queryTwin()">Search</button>
+    <div id="queryResults"></div>
+  </section>
 
-        <button id="uploadBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full">
-            Upload & Process
-        </button>
+  <script>
+    // ---- PDF Upload ----
+    async function uploadPDF() {
+      const fileInput = document.getElementById("pdfFile");
+      const status = document.getElementById("uploadStatus");
 
-        <div id="status" class="mt-4 text-sm text-gray-700"></div>
-    </div>
+      if (!fileInput.files.length) {
+        alert("Please select a PDF file first!");
+        return;
+      }
 
-    <script>
-        document.getElementById("uploadBtn").addEventListener("click", async () => {
-            const fileInput = document.getElementById("pdfFile");
-            const file = fileInput.files[0];
-            const statusDiv = document.getElementById("status");
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
 
-            if (!file) {
-                statusDiv.textContent = "Please select a PDF file first.";
-                return;
-            }
+      status.textContent = "Uploading and processing... ⏳";
 
-            const formData = new FormData();
-            formData.append("file", file);
-
-            statusDiv.textContent = "Uploading and processing...";
-            try {
-                const response = await fetch("/upload-pdf", {
-                    method: "POST",
-                    body: formData
-                });
-
-                const result = await response.json();
-                if (response.ok) {
-                    statusDiv.textContent = "✅ " + result.message;
-                } else {
-                    statusDiv.textContent = "❌ Error: " + result.detail;
-                }
-            } catch (err) {
-                statusDiv.textContent = "❌ Upload failed: " + err.message;
-            }
+      try {
+        const res = await fetch("http://localhost:8000/upload-pdf", {
+          method: "POST",
+          body: formData,
         });
-    </script>
+
+        const data = await res.json();
+        if (res.ok) {
+          status.textContent = "✅ " + data.message;
+        } else {
+          status.textContent = "❌ Error: " + (data.detail || "Upload failed");
+        }
+      } catch (err) {
+        status.textContent = "❌ Upload error: " + err.message;
+      }
+    }
+
+    // ---- Query Twin ----
+    async function queryTwin() {
+      const queryText = document.getElementById("queryText").value.trim();
+      const resultsDiv = document.getElementById("queryResults");
+
+      if (!queryText) {
+        alert("Please enter a query!");
+        return;
+      }
+
+      resultsDiv.innerHTML = "Searching... ⏳";
+
+      try {
+        const res = await fetch(
+          `http://localhost:8000/api/v1/module3/query-twin?query=${encodeURIComponent(queryText)}&top_k=3`
+        );
+        const data = await res.json();
+
+        if (res.ok && data.results && data.results.length) {
+          resultsDiv.innerHTML = `<h3>Top ${data.results.length} Results:</h3>`;
+          data.results.forEach((r, i) => {
+            resultsDiv.innerHTML += `
+              <div class="result">
+                <strong>#${i + 1} (Score: ${r.score.toFixed(3)})</strong><br>
+                <em>Citation:</em> ${r.citation_id || "N/A"}<br>
+                <p>${r.chunk_text}</p>
+              </div>`;
+          });
+        } else {
+          resultsDiv.innerHTML = "No results found.";
+        }
+      } catch (err) {
+        resultsDiv.innerHTML = "❌ Search failed: " + err.message;
+      }
+    }
+  </script>
 </body>
 </html>
