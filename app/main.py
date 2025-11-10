@@ -1,10 +1,14 @@
-from fastapi import FastAPI
+import asyncio
+import logging
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1 import endpoints
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
+# Local imports
+from app.api.v1 import endpoints, upload_routes
 from app.services.vector_store import VectorStoreService
 from app.core.config import settings
-import logging
-import asyncio
 
 # ============================================================
 # Logging Configuration
@@ -20,8 +24,8 @@ logger = logging.getLogger(__name__)
 # ============================================================
 app = FastAPI(
     title="Legal Semantic Pipeline",
-    version="1.0.0",
-    description="Semantic chunking and Qdrant integration for legal documents."
+    version="1.1.0",
+    description="Semantic chunking, OCR PDF ingestion, and Qdrant integration for legal documents."
 )
 
 # ============================================================
@@ -29,22 +33,36 @@ app = FastAPI(
 # ============================================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For production, restrict this
+    allow_origins=["*"],  # ⚠️ In production, restrict to your frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ============================================================
-# API Routers
+# Frontend Setup (Templates + Static Files)
 # ============================================================
-# ✅ Final endpoint paths:
-# POST   /api/v1/module3/ingest-document
-# GET    /api/v1/module3/query-twin
-app.include_router(endpoints.router, prefix="/api/v1/module3")
+templates = Jinja2Templates(directory="app/templates")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+@app.get("/")
+async def serve_frontend(request: Request):
+    """
+    Serves the minimal upload HTML UI.
+    """
+    return templates.TemplateResponse("index.html", {"request": request})
 
 # ============================================================
-# Qdrant Collection Initialization (Startup Event)
+# Routers
+# ============================================================
+# ✅ Existing API Endpoints
+app.include_router(endpoints.router, prefix="/api/v1/module3")
+
+# ✅ New Upload (PDF + OCR) Endpoint
+app.include_router(upload_routes.router)
+
+# ============================================================
+# Startup Event - Initialize Qdrant Collection
 # ============================================================
 @app.on_event("startup")
 async def startup_event():

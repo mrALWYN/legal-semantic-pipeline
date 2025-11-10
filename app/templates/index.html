@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Legal Document Uploader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex flex-col items-center justify-center h-screen">
+
+    <div class="bg-white p-8 rounded-2xl shadow-md w-96 text-center">
+        <h1 class="text-2xl font-bold mb-4">Upload Legal PDF</h1>
+
+        <input id="pdfFile" type="file" accept="application/pdf"
+               class="border border-gray-300 p-2 rounded w-full mb-4"/>
+
+        <button id="uploadBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full">
+            Upload & Process
+        </button>
+
+        <div id="status" class="mt-4 text-sm text-gray-700"></div>
+    </div>
+
+    <script>
+        document.getElementById("uploadBtn").addEventListener("click", async () => {
+            const fileInput = document.getElementById("pdfFile");
+            const file = fileInput.files[0];
+            const statusDiv = document.getElementById("status");
+
+            if (!file) {
+                statusDiv.textContent = "Please select a PDF file first.";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            statusDiv.textContent = "Uploading and processing...";
+            try {
+                const response = await fetch("/upload-pdf", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    statusDiv.textContent = "✅ " + result.message;
+                } else {
+                    statusDiv.textContent = "❌ Error: " + result.detail;
+                }
+            } catch (err) {
+                statusDiv.textContent = "❌ Upload failed: " + err.message;
+            }
+        });
+    </script>
+</body>
+</html>
