@@ -25,13 +25,14 @@
     label {
       font-weight: 600;
     }
-    input, textarea {
+    input, textarea, select {
       width: 100%;
       padding: 10px;
       margin-top: 8px;
       margin-bottom: 12px;
       border: 1px solid #ccc;
       border-radius: 6px;
+      font-size: 15px;
     }
     button {
       background-color: #0078d4;
@@ -47,12 +48,29 @@
     }
     .result {
       background: #f0f0f5;
-      border-radius: 6px;
-      padding: 10px;
-      margin-top: 10px;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
       font-family: monospace;
       white-space: pre-wrap;
+      border: 1px solid #ddd;
     }
+    .metadata {
+      background: #272822;
+      color: #f8f8f2;
+      padding: 8px;
+      border-radius: 8px;
+      margin-top: 8px;
+      overflow-x: auto;
+      font-size: 13px;
+    }
+    details summary {
+      cursor: pointer;
+      color: #0078d4;
+      font-weight: bold;
+      margin-top: 6px;
+    }
+    pre { margin: 0; }
   </style>
 </head>
 <body>
@@ -70,7 +88,16 @@
   <section>
     <h2>🔍 Query Legal Twin</h2>
     <label for="queryText">Enter your query:</label>
-    <textarea id="queryText" rows="3" placeholder="e.g. trademark infringement appeal..."></textarea>
+    <textarea id="queryText" rows="8" placeholder="e.g. trademark infringement appeal..."></textarea>
+
+    <label for="topK">Number of top results:</label>
+    <select id="topK">
+      <option value="3">Top 3</option>
+      <option value="5">Top 5</option>
+      <option value="10" selected>Top 10</option>
+      <option value="20">Top 20</option>
+    </select>
+
     <button onclick="queryTwin()">Search</button>
     <div id="queryResults"></div>
   </section>
@@ -92,7 +119,7 @@
       status.textContent = "Uploading and processing... ⏳";
 
       try {
-        const res = await fetch("http://localhost:8000/upload-pdf", {
+        const res = await fetch("/upload-pdf", {
           method: "POST",
           body: formData,
         });
@@ -111,6 +138,7 @@
     // ---- Query Twin ----
     async function queryTwin() {
       const queryText = document.getElementById("queryText").value.trim();
+      const topK = document.getElementById("topK").value;
       const resultsDiv = document.getElementById("queryResults");
 
       if (!queryText) {
@@ -121,19 +149,23 @@
       resultsDiv.innerHTML = "Searching... ⏳";
 
       try {
-        const res = await fetch(
-          `http://localhost:8000/api/v1/module3/query-twin?query=${encodeURIComponent(queryText)}&top_k=3`
-        );
+        const res = await fetch(`/api/v1/module3/query-twin?query=${encodeURIComponent(queryText)}&top_k=${topK}`);
         const data = await res.json();
 
         if (res.ok && data.results && data.results.length) {
-          resultsDiv.innerHTML = `<h3>Top ${data.results.length} Results:</h3>`;
+          resultsDiv.innerHTML = `<h3>Showing Top ${data.results.length} Results for "<em>${data.query}</em>":</h3>`;
+
           data.results.forEach((r, i) => {
             resultsDiv.innerHTML += `
               <div class="result">
-                <strong>#${i + 1} (Score: ${r.score.toFixed(3)})</strong><br>
+                <strong>#${i + 1} (Score: ${r.score.toFixed(4)})</strong><br>
                 <em>Citation:</em> ${r.citation_id || "N/A"}<br>
                 <p>${r.chunk_text}</p>
+
+                <details>
+                  <summary>📘 View Metadata</summary>
+                  <div class="metadata"><pre>${syntaxHighlight(r.metadata)}</pre></div>
+                </details>
               </div>`;
           });
         } else {
@@ -142,6 +174,29 @@
       } catch (err) {
         resultsDiv.innerHTML = "❌ Search failed: " + err.message;
       }
+    }
+
+    // ---- Pretty Print JSON Metadata ----
+    function syntaxHighlight(json) {
+      if (typeof json != 'string') {
+        json = JSON.stringify(json, undefined, 2);
+      }
+      json = json
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      return json.replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        function (match) {
+          let cls = 'number';
+          if (/^"/.test(match)) {
+            if (/:$/.test(match)) cls = 'key';
+            else cls = 'string';
+          } else if (/true|false/.test(match)) cls = 'boolean';
+          else if (/null/.test(match)) cls = 'null';
+          return '<span class="' + cls + '">' + match + '</span>';
+        }
+      );
     }
   </script>
 </body>

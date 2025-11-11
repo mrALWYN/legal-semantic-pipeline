@@ -1,10 +1,11 @@
 import uuid
 import logging
 from app.core.config import settings
-from app.services.chunking import SemanticChunker
+from app.services.chunking import SemanticLegalChunker
 from app.services.vector_store import VectorStoreService
 
 logger = logging.getLogger(__name__)
+
 
 async def ingest_legal_document(
     text: str,
@@ -15,7 +16,7 @@ async def ingest_legal_document(
     Main pipeline: chunk legal document → embed → upsert into Qdrant
     """
     try:
-        logger.info("[PIPELINE] Starting document ingestion pipeline...")
+        logger.info(f"[PIPELINE] Starting ingestion for document '{document_id}'")
 
         # ✅ 1. Initialize Qdrant vector store service
         vector_store = VectorStoreService(
@@ -26,20 +27,25 @@ async def ingest_legal_document(
 
         # ✅ 2. Ensure collection exists
         await vector_store.create_collection()
-        logger.info("[PIPELINE] Qdrant collection ready ✅")
+        logger.info("[PIPELINE] Qdrant collection verified ✅")
 
-        # ✅ 3. Initialize chunker
-        chunker = SemanticChunker(
-            strategy=chunking_strategy,
-            chunk_size=settings.CHUNK_SIZE,
-            overlap=settings.CHUNK_OVERLAP
+        # ✅ 3. Initialize Semantic Chunker
+        chunker = SemanticLegalChunker(
+            min_chunk_size=settings.CHUNK_SIZE,
+            max_chunk_size=settings.MAX_CHUNK_SIZE,
+            merge_threshold=200
         )
 
         # ✅ 4. Chunk document
         chunks = chunker.chunk_document(text)
+
+        # ✅ 5. Inject citation_id into each chunk's metadata
+        for c in chunks:
+            c["citation_id"] = document_id
+
         logger.info(f"[PIPELINE] Chunked document into {len(chunks)} segments")
 
-        # ✅ 5. Embed and insert into Qdrant
+        # ✅ 6. Embed and insert into Qdrant
         await vector_store.ingest_chunks(chunks, document_id)
         logger.info("[PIPELINE] Successfully inserted vectors into Qdrant ✅")
 
