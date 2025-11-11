@@ -49,11 +49,24 @@
     .result {
       background: #f0f0f5;
       border-radius: 8px;
-      padding: 12px;
-      margin-top: 12px;
-      font-family: monospace;
-      white-space: pre-wrap;
-      border: 1px solid #ddd;
+      padding: 14px;
+      margin-top: 14px;
+      border-left: 6px solid #0078d4;
+      font-family: "Segoe UI", sans-serif;
+    }
+    .meta-line {
+      font-size: 14px;
+      color: #444;
+      margin-top: 4px;
+    }
+    .tag {
+      display: inline-block;
+      background: #0078d4;
+      color: white;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 12px;
+      margin-right: 6px;
     }
     .metadata {
       background: #272822;
@@ -71,6 +84,11 @@
       margin-top: 6px;
     }
     pre { margin: 0; }
+    .string { color: #a6e22e; }
+    .number { color: #ae81ff; }
+    .boolean { color: #66d9ef; }
+    .null { color: #f92672; }
+    .key { color: #fd971f; }
   </style>
 </head>
 <body>
@@ -115,15 +133,10 @@
 
       const formData = new FormData();
       formData.append("file", fileInput.files[0]);
-
       status.textContent = "Uploading and processing... ⏳";
 
       try {
-        const res = await fetch("/upload-pdf", {
-          method: "POST",
-          body: formData,
-        });
-
+        const res = await fetch("/upload-pdf", { method: "POST", body: formData });
         const data = await res.json();
         if (res.ok) {
           status.textContent = "✅ " + data.message;
@@ -156,15 +169,28 @@
           resultsDiv.innerHTML = `<h3>Showing Top ${data.results.length} Results for "<em>${data.query}</em>":</h3>`;
 
           data.results.forEach((r, i) => {
+            const meta = r.metadata || {};
+
             resultsDiv.innerHTML += `
               <div class="result">
                 <strong>#${i + 1} (Score: ${r.score.toFixed(4)})</strong><br>
-                <em>Citation:</em> ${r.citation_id || "N/A"}<br>
+                <div class="meta-line"><em>Citation:</em> ${r.citation_id || "N/A"}</div>
+                <div class="meta-line">
+                  <span class="tag">${meta.type || "Unknown"}</span>
+                  Confidence: ${(meta.confidence ?? 0).toFixed(2)} |
+                  Sentences: ${meta.sentence_count ?? "?"} |
+                  Chars: ${meta.char_count ?? "?"}
+                </div>
+                <div class="meta-line">
+                  ${meta.has_citations ? "📑 Has Citations" : "—"} •
+                  ${meta.has_statutes ? "⚖️ Has Statutes" : "—"} •
+                  ${meta.has_parties ? "👥 Mentions Parties" : "—"}
+                </div>
                 <p>${r.chunk_text}</p>
 
                 <details>
-                  <summary>📘 View Metadata</summary>
-                  <div class="metadata"><pre>${syntaxHighlight(r.metadata)}</pre></div>
+                  <summary>📘 View Full Metadata</summary>
+                  <div class="metadata"><pre>${syntaxHighlight(meta)}</pre></div>
                 </details>
               </div>`;
           });
@@ -178,23 +204,16 @@
 
     // ---- Pretty Print JSON Metadata ----
     function syntaxHighlight(json) {
-      if (typeof json != 'string') {
-        json = JSON.stringify(json, undefined, 2);
-      }
-      json = json
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+      if (typeof json != 'string') json = JSON.stringify(json, undefined, 2);
+      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       return json.replace(
         /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-        function (match) {
+        match => {
           let cls = 'number';
-          if (/^"/.test(match)) {
-            if (/:$/.test(match)) cls = 'key';
-            else cls = 'string';
-          } else if (/true|false/.test(match)) cls = 'boolean';
+          if (/^"/.test(match)) cls = /:$/.test(match) ? 'key' : 'string';
+          else if (/true|false/.test(match)) cls = 'boolean';
           else if (/null/.test(match)) cls = 'null';
-          return '<span class="' + cls + '">' + match + '</span>';
+          return `<span class="${cls}">${match}</span>`;
         }
       );
     }

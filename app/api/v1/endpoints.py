@@ -26,7 +26,7 @@ async def ingest_document(request: IngestDocumentRequest):
         job_id = str(uuid.uuid4())
         citation_id = request.citation_id or job_id
 
-        logger.info(f"[INGEST] Starting ingestion for document: {citation_id}")
+        logger.info(f"[INGEST] 🚀 Starting ingestion for document: {citation_id}")
 
         result = await ingest_legal_document(
             text=request.document_text,
@@ -55,41 +55,43 @@ async def ingest_document(request: IngestDocumentRequest):
 async def query_twin(
     query: str = Query(..., description="Text query for semantic search"),
     top_k: int = Query(10, description="Number of top results to return (default=10)"),
-    citation_id: str | None = Query(None, description="(Optional) Filter by citation/document ID")
+    document_id: str | None = Query(None, description="(Optional) Filter by document ID or citation"),
 ):
     """
     Perform a semantic vector search on Qdrant.
-    Optionally filter results by `citation_id` (document name or ID).
+    Optionally filter by `document_id` (citation name).
+    Returns top-k matches with full metadata.
     """
     try:
-        logger.info(f"[QUERY] Searching for: '{query}' (top_k={top_k}, filter={citation_id})")
+        logger.info(f"[QUERY] 🔍 Searching for: '{query}' (top_k={top_k}, filter={document_id})")
 
-        # ✅ Initialize Qdrant client
+        # ✅ Initialize Qdrant vector service
         vector_service = VectorStoreService(
             host=settings.QDRANT_HOST,
             port=settings.QDRANT_PORT,
             collection_name=settings.COLLECTION_NAME
         )
 
-        # ✅ Get search results
+        # ✅ Perform semantic search
         all_results = vector_service.search(query=query, top_k=top_k)
 
-        # ✅ Optional filter by citation/document name
-        if citation_id:
+        # ✅ Filter by document/citation ID if provided
+        if document_id:
             filtered_results = [
                 r for r in all_results
-                if r.get("citation_id", "").lower() == citation_id.lower()
+                if r.get("document_id", "").lower() == document_id.lower()
             ]
+            logger.info(f"[QUERY] Applied filter for document_id='{document_id}', {len(filtered_results)} results left.")
         else:
             filtered_results = all_results
 
-        # ✅ Format final results (include *all metadata*)
+        # ✅ Prepare structured response (full metadata)
         results = [
             SearchResult(
                 chunk_text=r.get("chunk_text", ""),
-                citation_id=r.get("citation_id", ""),
+                citation_id=r.get("document_id", r.get("citation_id", "")),
                 score=round(r.get("score", 0), 4),
-                metadata=r.get("metadata", {})  # <-- include all metadata fields
+                metadata=r.get("metadata", {})  # full metadata from Qdrant
             )
             for r in filtered_results
         ]
@@ -99,7 +101,7 @@ async def query_twin(
         return {
             "query": query,
             "results": results,
-            "total_found": len(results)
+            "total_found": len(results),
         }
 
     except Exception as e:

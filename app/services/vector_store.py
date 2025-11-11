@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 class VectorStoreService:
     """
     Handles all Qdrant operations:
-    - Collection management
-    - Chunk ingestion
-    - Semantic search
+    - Collection creation / management
+    - Semantic vector embedding + upsert
+    - Search and retrieval
     """
 
     def __init__(self, host: str, port: int, collection_name: str):
@@ -23,9 +23,10 @@ class VectorStoreService:
         self.embedder = SentenceTransformer(settings.EMBEDDING_MODEL)
 
     # ------------------------------------------------------------
-    # Create or Verify Collection
+    # ✅ Create or Verify Qdrant Collection
     # ------------------------------------------------------------
     async def create_collection(self):
+        """Ensure Qdrant collection exists, create if missing."""
         try:
             collections = self.client.get_collections().collections
             existing = [c.name for c in collections]
@@ -36,8 +37,8 @@ class VectorStoreService:
                     collection_name=self.collection_name,
                     vectors_config=VectorParams(
                         size=settings.EMBEDDING_DIM,
-                        distance=Distance.COSINE
-                    )
+                        distance=Distance.COSINE,
+                    ),
                 )
                 logger.info(f"[QDRANT] ✅ Collection '{self.collection_name}' created successfully.")
             else:
@@ -45,30 +46,40 @@ class VectorStoreService:
 
         except Exception as e:
             logger.error(f"[QDRANT] ❌ Failed to create collection: {e}")
-            raise e
+            raise
 
     # ------------------------------------------------------------
-    # Ingest / Upsert Chunks
+    # ✅ Upsert Semantic Chunks
     # ------------------------------------------------------------
-    async def ingest_chunks(self, chunks: List[Dict], document_id: str):
+    async def upsert_chunks(self, chunks: List[Dict], document_id: str):
         """
-        Embed and insert chunks into Qdrant with metadata.
+        Embed and insert/update semantic chunks into Qdrant with metadata.
+        Each chunk is linked to the provided `document_id`.
         """
         try:
-            logger.info(f"[QDRANT] Embedding and inserting {len(chunks)} chunks for document '{document_id}'")
+            if not chunks:
+                logger.warning("[QDRANT] No chunks provided for upsert.")
+                return
 
-            vectors, payloads = [], []
+            logger.info(f"[QDRANT] Embedding and upserting {len(chunks)} chunks for '{document_id}' ...")
+
+            vectors, payloads, ids = [], [], []
+
             for i, chunk in enumerate(chunks):
-                text = chunk.get("text", "")
-                if not text.strip():
+                text = chunk.get("text", "").strip()
+                if not text:
                     continue
 
+                # ✅ Embed text using SentenceTransformer
                 vector = self.embedder.encode(text).tolist()
                 vectors.append(vector)
+                ids.append(str(uuid.uuid4()))
 
+                # ✅ Construct payload with metadata
                 payloads.append({
                     "chunk_id": chunk.get("chunk_id", str(i)),
-                    "citation_id": document_id,
+                    "citation_id": chunk.get("citation_id", document_id),
+                    "document_id": document_id,
                     "text": text,
                     "type": chunk.get("type", "Unknown"),
                     "confidence": chunk.get("confidence"),
@@ -80,41 +91,46 @@ class VectorStoreService:
                 })
 
             if not vectors:
-                logger.warning("[QDRANT] No valid chunks to ingest.")
+                logger.warning("[QDRANT] No valid vectors to upsert.")
                 return
 
+            # ✅ Perform Qdrant upsert
             self.client.upsert(
                 collection_name=self.collection_name,
                 points=Batch(
-                    ids=[str(uuid.uuid4()) for _ in range(len(vectors))],
+                    ids=ids,
                     vectors=vectors,
-                    payloads=payloads
-                )
+                    payloads=payloads,
+                ),
             )
 
-            logger.info(f"[QDRANT] ✅ Inserted {len(vectors)} vectors into collection '{self.collection_name}'")
+            logger.info(f"[QDRANT] ✅ Successfully upserted {len(vectors)} chunks into '{self.collection_name}'")
 
         except Exception as e:
-            logger.error(f"[QDRANT] ❌ Vector ingestion failed: {e}")
-            raise e
+            logger.error(f"[QDRANT] ❌ Upsert failed: {e}")
+            raise
 
     # ------------------------------------------------------------
-    # Semantic Search
+    # ✅ Semantic Search
     # ------------------------------------------------------------
     def search(self, query: str, top_k: int = 10) -> List[Dict]:
         """
         Perform a semantic similarity search in Qdrant.
-
-        Returns a list of payloads + similarity scores.
+        Returns top chunks with their full metadata.
         """
         try:
+            if not query.strip():
+                raise ValueError("Empty query provided for semantic search.")
+
+            logger.info(f"[QDRANT] 🔍 Searching for '{query}' (top_k={top_k})")
+
             query_vec = self.embedder.encode(query).tolist()
-            top_k = min(top_k, 50)  # safety cap
+            top_k = min(top_k, 50)  # Safety cap
 
             search_results = self.client.search(
                 collection_name=self.collection_name,
                 query_vector=query_vec,
-                limit=top_k
+                limit=top_k,
             )
 
             results = []
@@ -122,15 +138,16 @@ class VectorStoreService:
                 payload = hit.payload or {}
                 results.append({
                     "chunk_text": payload.get("text", ""),
+                    "document_id": payload.get("document_id", ""),
                     "citation_id": payload.get("citation_id", ""),
                     "type": payload.get("type", "Unknown"),
-                    "score": hit.score,
-                    "metadata": payload
+                    "score": round(hit.score, 4),
+                    "metadata": payload,  # ✅ send full metadata for frontend
                 })
 
-            logger.info(f"[QDRANT] 🔍 Retrieved {len(results)} search results for query: '{query}'")
+            logger.info(f"[QDRANT] ✅ Retrieved {len(results)} results for query '{query}'")
             return results
 
         except Exception as e:
             logger.error(f"[QDRANT] ❌ Search failed: {e}")
-            raise e
+            raise

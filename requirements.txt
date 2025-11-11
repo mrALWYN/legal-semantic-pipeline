@@ -1,18 +1,27 @@
+# ==============================
+# ⚖️  Legal Semantic Pipeline
+# ==============================
+
+# --- FastAPI core ---
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
 pydantic==2.5.3
 pydantic-settings==2.1.0
+python-multipart==0.0.6
+python-dotenv==1.0.0
 
-# ✅ LangChain stack (fully compatible)
+# --- LangChain ecosystem ---
 langchain==0.1.13
 langchain-community==0.0.33
 langchain-text-splitters==0.0.2
+langchain-experimental==0.0.52    # ✅ Needed for SemanticChunker
 langsmith==0.1.17
 
+# --- Vector DB & embeddings ---
 qdrant-client==1.7.0
 sentence-transformers==2.3.1
-python-multipart==0.0.6
-python-dotenv==1.0.0
+
+# --- PDF / OCR utilities ---
 pdf2image==1.17.0
 pytesseract==0.3.10
 Pillow==10.2.0
