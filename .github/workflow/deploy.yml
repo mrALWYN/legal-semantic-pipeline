@@ -1,0 +1,54 @@
+name: 🧪 CI - Build, Lint & Test
+
+on:
+  push:
+    branches:
+      - "*"       # All branches
+      - "!main"
+      - "!master"
+  pull_request:
+
+jobs:
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    services:
+      qdrant:
+        image: qdrant/qdrant:v1.7.0
+        ports:
+          - 6333:6333
+        options: >-
+          --health-cmd "curl -f http://localhost:6333/collections || exit 1"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint Code
+        run: |
+          pip install flake8
+          flake8 app --max-line-length=120
+
+      - name: Run Tests
+        env:
+          QDRANT_HOST: localhost
+          QDRANT_PORT: 6333
+          EMBEDDING_MODEL: sentence-transformers/all-MiniLM-L6-v2
+          COLLECTION_NAME: legal_precedents
+        run: |
+          pip install pytest pytest-asyncio
+          pytest -v --disable-warnings
