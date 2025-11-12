@@ -1,6 +1,9 @@
-version: '3.8'
+version: "3.9"
 
 services:
+  # =======================
+  # 🧠 QDRANT VECTOR DB
+  # =======================
   qdrant:
     image: qdrant/qdrant:latest
     container_name: qdrant
@@ -8,19 +11,74 @@ services:
       - "6333:6333"
     volumes:
       - qdrant_data:/qdrant/storage
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:6333/ready"]
+      interval: 20s        # Wait 20 seconds between checks
+      timeout: 10s         # Allow up to 10 seconds for a response
+      retries: 15          # Retry up to 15 times (5 minutes total)
+      start_period: 60s    # Give Qdrant 60 seconds to start before first check
 
+  # =======================
+  # 📊 MLFLOW TRACKING SERVER (using openEuler image)
+  # =======================
+  mlflow:
+    image: openeuler/mlflow:latest
+    container_name: mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      MLFLOW_ARTIFACT_ROOT: /mlflow/artifacts
+      BACKEND_STORE_URI: sqlite:////mlflow/db/mlflow.db
+    volumes:
+      - ./mlflow_artifacts:/mlflow/artifacts
+      - ./mlflow_db:/mlflow/db
+    command: >
+      mlflow server
+      --backend-store-uri sqlite:////mlflow/db/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+      --host 0.0.0.0
+      --port 5000
+      --serve-artifacts
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # =======================
+  # ⚖️ FASTAPI LEGAL API
+  # =======================
   api:
     build: .
     container_name: legal_api
     depends_on:
-      - qdrant
+      qdrant:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
     environment:
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
       - COLLECTION_NAME=legal_precedents
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - REGISTERED_MODEL_NAME=legal-embed-model
     ports:
       - "8000:8000"
+    volumes:
+      - ./app:/app/app
     restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
 
+# =======================
+# 🗄️ NAMED VOLUMES
+# =======================
 volumes:
   qdrant_data:
+  mlflow_artifacts:
+  mlflow_db:

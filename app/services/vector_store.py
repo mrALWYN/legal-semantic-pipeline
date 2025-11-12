@@ -1,10 +1,20 @@
 import uuid
+import time
+import tracemalloc
 import logging
 from typing import List, Dict
+
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import VectorParams, Distance, Batch
 from sentence_transformers import SentenceTransformer
+
 from app.core.config import settings
+from app.services.metrics import (
+    embedding_time_hist,
+    storage_time_hist,
+    current_memory,
+    ingest_chunks,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -49,21 +59,30 @@ class VectorStoreService:
             raise
 
     # ------------------------------------------------------------
-    # ✅ Upsert Semantic Chunks
+    # ✅ Upsert Semantic Chunks (with metrics)
     # ------------------------------------------------------------
-    async def upsert_chunks(self, chunks: List[Dict], document_id: str):
+    async def upsert_chunks(self, chunks: List[Dict], document_id: str) -> float:
         """
         Embed and insert/update semantic chunks into Qdrant with metadata.
-        Each chunk is linked to the provided `document_id`.
+        Tracks:
+          - embedding_time
+          - storage_time
+          - memory_usage
+        Returns:
+          embedding_time (float): total time taken to embed chunks
         """
         try:
             if not chunks:
                 logger.warning("[QDRANT] No chunks provided for upsert.")
-                return
+                return 0.0
 
             logger.info(f"[QDRANT] Embedding and upserting {len(chunks)} chunks for '{document_id}' ...")
 
             vectors, payloads, ids = [], [], []
+
+            # Track embedding time and memory usage
+            tracemalloc.start()
+            start_embed = time.time()
 
             for i, chunk in enumerate(chunks):
                 text = chunk.get("text", "").strip()
@@ -90,11 +109,24 @@ class VectorStoreService:
                     "has_parties": chunk.get("has_parties"),
                 })
 
+            embedding_time = time.time() - start_embed
+            current, peak = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
+
+            # ✅ Update Prometheus metrics
+            try:
+                embedding_time_hist.observe(embedding_time)
+                current_memory.set(peak)
+                ingest_chunks.inc(len(vectors))
+            except Exception as metric_err:
+                logger.warning(f"[METRICS] Failed to record Prometheus metrics: {metric_err}")
+
             if not vectors:
                 logger.warning("[QDRANT] No valid vectors to upsert.")
-                return
+                return embedding_time
 
-            # ✅ Perform Qdrant upsert
+            # ✅ Qdrant Upsert (measure time)
+            start_store = time.time()
             self.client.upsert(
                 collection_name=self.collection_name,
                 points=Batch(
@@ -103,8 +135,21 @@ class VectorStoreService:
                     payloads=payloads,
                 ),
             )
+            storage_time = time.time() - start_store
 
-            logger.info(f"[QDRANT] ✅ Successfully upserted {len(vectors)} chunks into '{self.collection_name}'")
+            # ✅ Record storage time metric
+            try:
+                storage_time_hist.observe(storage_time)
+            except Exception:
+                logger.warning("[METRICS] Failed to record storage time histogram")
+
+            logger.info(
+                f"[QDRANT] ✅ Upserted {len(vectors)} chunks "
+                f"(embedding_time={embedding_time:.2f}s, storage_time={storage_time:.2f}s, "
+                f"peak_memory={peak/1e6:.2f}MB)"
+            )
+
+            return embedding_time
 
         except Exception as e:
             logger.error(f"[QDRANT] ❌ Upsert failed: {e}")

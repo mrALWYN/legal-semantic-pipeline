@@ -1,4 +1,5 @@
 import re
+import time
 import logging
 from typing import List, Dict
 from collections import Counter
@@ -7,6 +8,10 @@ from dataclasses import dataclass
 # ✅ Correct imports
 from langchain_experimental.text_splitter import SemanticChunker
 from langchain_community.embeddings import HuggingFaceEmbeddings
+
+# Internal imports
+from app.services.metrics import ingest_chunks, embedding_time_hist
+from app.services import mlflow_service
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -134,9 +139,11 @@ class SemanticLegalChunker:
             logger.warning("[CHUNKER] Empty or invalid text input.")
             return []
 
+        start_time = time.time()
         logger.info("[CHUNKER] Starting semantic chunking...")
         chunks = self._semantic_split(text)
-        logger.info(f"[CHUNKER] ✅ Generated {len(chunks)} legal-aware chunks.")
+        chunk_time = time.time() - start_time
+        logger.info(f"[CHUNKER] ✅ Generated {len(chunks)} legal-aware chunks in {chunk_time:.2f}s")
 
         classified_chunks = []
         for i, chunk_text in enumerate(chunks):
@@ -162,9 +169,127 @@ class SemanticLegalChunker:
         avg_size = sum(c["char_count"] for c in classified_chunks) / len(classified_chunks)
         type_dist = Counter(c["type"] for c in classified_chunks)
 
+        # ✅ Update metrics + log to MLflow
+        ingest_chunks.inc(len(classified_chunks))
+        embedding_time_hist.observe(chunk_time)
+
+        try:
+            run = mlflow_service.start_run(experiment_name="chunking_experiments")
+            mlflow_service.log_metrics({
+                "chunk_count": len(classified_chunks),
+                "chunk_time": chunk_time,
+                "avg_chunk_size": avg_size,
+            })
+            for t, v in type_dist.items():
+                mlflow_service.log_metrics({f"type_{t}_count": v})
+            mlflow_service.log_model_metadata(
+                model_name=self.embedder.model_name,
+                embedding_dim=384,
+                chunk_size=self.min_chunk_size,
+                overlap=self.chunk_overlap,
+            )
+            mlflow_service.mlflow.end_run()
+        except Exception as e:
+            logger.warning(f"[MLFLOW] Failed to log chunking experiment: {e}")
+
         logger.info(
             f"[CHUNKER] ✅ Finalized {len(classified_chunks)} chunks "
             f"(avg size {avg_size:.0f} chars) | Type dist: {dict(type_dist)}"
         )
 
         return classified_chunks
+
+
+# ============================================================
+# 🧩 Recursive Chunker (baseline comparison)
+# ============================================================
+
+class RecursiveChunker:
+    """
+    Simple paragraph/sentence-based recursive chunker to compare against semantic chunking.
+    """
+
+    def __init__(self, min_chunk_size=500, max_chunk_size=1200, chunk_overlap=100, embedding_model=None):
+        self.min_chunk_size = min_chunk_size
+        self.max_chunk_size = max_chunk_size
+        self.chunk_overlap = chunk_overlap
+        self.classifier = LegalChunkClassifier()
+
+    def _recursive_split(self, text: str) -> List[str]:
+        """Recursively split text by paragraphs or sentences within size bounds."""
+        if len(text) <= self.max_chunk_size:
+            return [text.strip()]
+
+        parts = [p for p in text.split("\n\n") if p.strip()]
+        if len(parts) <= 1:
+            sentences = re.split(r'(?<=[.!?])\s+', text)
+            chunks, buffer = [], ""
+            for s in sentences:
+                if len(buffer) + len(s) <= self.max_chunk_size:
+                    buffer += " " + s
+                else:
+                    if buffer:
+                        chunks.append(buffer.strip())
+                    buffer = s
+            if buffer:
+                chunks.append(buffer.strip())
+            return chunks
+
+        result = []
+        for p in parts:
+            result += self._recursive_split(p)
+        return result
+
+    def chunk_document(self, text: str, document_id: str) -> List[Dict]:
+        if not text or not isinstance(text, str):
+            return []
+
+        start_time = time.time()
+        chunks = self._recursive_split(text)
+        chunk_time = time.time() - start_time
+        logger.info(f"[CHUNKER-RECURSIVE] Generated {len(chunks)} chunks in {chunk_time:.2f}s")
+
+        final_chunks = []
+        for i, chunk in enumerate(chunks):
+            chunk_text = chunk
+            if i > 0:
+                tail = chunks[i - 1][-self.chunk_overlap:]
+                chunk_text = tail + "\n" + chunk
+            classification = self.classifier.classify_chunk(chunk_text)
+            final_chunks.append({
+                "chunk_id": str(i),
+                "document_id": document_id,
+                "text": chunk_text,
+                "type": classification.category,
+                "char_count": len(chunk_text),
+                "sentence_count": len(re.split(r"[.!?]", chunk_text)),
+                "confidence": classification.confidence,
+                "has_citations": bool(re.search(r"\(\d{4}\)\s+\d+\s+(?:SCC|AIR)", chunk_text)),
+                "has_statutes": bool(re.search(r"\b(?:Section|Article)\s+\d+", chunk_text)),
+                "has_parties": bool(re.search(r"\b(?:petitioner|respondent|appellant|defendant)\b", chunk_text, re.IGNORECASE)),
+            })
+
+        avg_size = sum(c["char_count"] for c in final_chunks) / len(final_chunks)
+        type_dist = Counter(c["type"] for c in final_chunks)
+
+        # ✅ Metrics + MLflow
+        ingest_chunks.inc(len(final_chunks))
+        embedding_time_hist.observe(chunk_time)
+        try:
+            run = mlflow_service.start_run(experiment_name="chunking_experiments")
+            mlflow_service.log_metrics({
+                "chunk_count": len(final_chunks),
+                "chunk_time": chunk_time,
+                "avg_chunk_size": avg_size,
+            })
+            for t, v in type_dist.items():
+                mlflow_service.log_metrics({f"type_{t}_count": v})
+            mlflow_service.mlflow.end_run()
+        except Exception as e:
+            logger.warning(f"[MLFLOW] Failed to log recursive chunking: {e}")
+
+        logger.info(
+            f"[CHUNKER-RECURSIVE] ✅ {len(final_chunks)} chunks | avg size {avg_size:.0f} | "
+            f"dist: {dict(type_dist)}"
+        )
+        return final_chunks

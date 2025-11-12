@@ -30,11 +30,44 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     API_TITLE: str = "Legal Semantic Pipeline"
-    API_VERSION: str = "1.1.0"
+    API_VERSION: str = "1.2.0"
     API_DESCRIPTION: str = (
         "FastAPI service for OCR-based ingestion, semantic chunking, "
         "and Qdrant vector storage of Indian legal documents."
     )
+
+    # ============================================================
+    # ⚙️ MLflow / Model Registry Configuration
+    # ============================================================
+    MLFLOW_TRACKING_URI: str = "http://localhost:5000"
+    REGISTERED_MODEL_NAME: str = "legal-embed-model"
+    EXPERIMENT_NAME: str = "ingest_experiments"
+
+    # ============================================================
+    # 📊 Prometheus Metrics Configuration
+    # ============================================================
+    PROMETHEUS_NAMESPACE: str = "legal_pipeline"
+    METRICS_ENABLED: bool = True
+
+    # ============================================================
+    # 💬 Feedback Store Configuration
+    # ============================================================
+    FEEDBACK_STORE_PATH: str = "feedback/feedback.jsonl"
+
+    # ============================================================
+    # 🧠 Experiment Management Configuration
+    # ============================================================
+    # DVC / experiment versioning parameters
+    DVC_REMOTE: str | None = None
+    ENABLE_DVC: bool = True
+
+    # Environment flags to toggle chunking strategies or experiments
+    DEFAULT_CHUNK_STRATEGY: str = "semantic-legal"  # or 'recursive-legal'
+    AVAILABLE_EMBED_MODELS: list[str] = [
+        "sentence-transformers/all-MiniLM-L6-v2",
+        "sentence-transformers/paraphrase-MiniLM-L12-v2",
+        "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+    ]
 
     # ============================================================
     # Pydantic Environment Configuration

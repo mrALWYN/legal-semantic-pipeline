@@ -5,8 +5,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+# ============================================================
 # Local imports
-from app.api.v1 import endpoints, upload_routes
+# ============================================================
+from app.api.v1 import (
+    endpoints,
+    upload_routes,
+    models as model_routes,
+    feedback as feedback_routes,
+    metrics_endpoint,
+    health_routes,
+)
 from app.services.vector_store import VectorStoreService
 from app.core.config import settings
 
@@ -24,10 +33,10 @@ logger = logging.getLogger(__name__)
 # ============================================================
 app = FastAPI(
     title="Legal Semantic Pipeline",
-    version="1.2.0",
+    version="1.3.0",
     description=(
-        "⚖️ A minimal semantic legal document pipeline with OCR-PDF ingestion, "
-        "Qdrant vector search, and frontend interface."
+        "⚖️ Semantic Legal Document Pipeline with OCR-PDF ingestion, "
+        "Qdrant vector search, MLflow experiment tracking, and Prometheus metrics."
     ),
 )
 
@@ -36,7 +45,7 @@ app = FastAPI(
 # ============================================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ⚠️ Restrict this in production (e.g. ["https://yourdomain.com"])
+    allow_origins=["*"],  # ⚠️ Restrict in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -48,21 +57,35 @@ app.add_middleware(
 templates = Jinja2Templates(directory="app/templates")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
+
 @app.get("/", include_in_schema=False)
 async def serve_frontend(request: Request):
-    """
-    Serves the minimal upload + query HTML UI.
-    """
+    """Serves the minimal upload + query HTML UI."""
     return templates.TemplateResponse("index.html", {"request": request})
+
 
 # ============================================================
 # Routers (API Endpoints)
 # ============================================================
-# ✅ Module 3 core endpoints: ingest-document & query-twin
+
+# ✅ Core endpoints (document ingestion + query)
 app.include_router(endpoints.router, prefix="/api/v1/module3")
 
-# ✅ Upload route (PDF + OCR ingestion)
+# ✅ Upload (PDF + OCR ingestion)
 app.include_router(upload_routes.router)
+
+# ✅ MLflow model management & experiment endpoints
+app.include_router(model_routes.router)
+
+# ✅ Feedback endpoint
+app.include_router(feedback_routes.router)
+
+# ✅ Prometheus metrics endpoint
+app.include_router(metrics_endpoint.router)
+
+# ✅ Health and readiness endpoints
+app.include_router(health_routes.router)
+
 
 # ============================================================
 # Startup Event: Qdrant Initialization
@@ -70,8 +93,8 @@ app.include_router(upload_routes.router)
 @app.on_event("startup")
 async def startup_event():
     """
-    Runs when the API starts up. Verifies Qdrant connection and
-    ensures the vector collection exists.
+    Runs when the API starts up.
+    Verifies Qdrant connection and ensures the vector collection exists.
     """
     try:
         logger.info("[INIT] Checking Qdrant connection...")
@@ -87,12 +110,11 @@ async def startup_event():
     except Exception as e:
         logger.error(f"[INIT] ❌ Failed to initialize Qdrant collection: {e}")
 
+
 # ============================================================
-# Health Check Endpoint
+# Health Check (basic legacy endpoint for backward compatibility)
 # ============================================================
 @app.get("/health", tags=["System"])
 async def health_check():
-    """
-    Simple API health endpoint to verify the backend is running.
-    """
+    """Simple API health endpoint to verify the backend is running."""
     return {"status": "ok", "message": "API is running successfully 🚀"}
