@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,21 +12,27 @@
       margin: 40px;
       color: #333;
     }
+
     h1 {
       color: #0078d4;
       margin-bottom: 10px;
     }
+
     section {
       background: white;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       margin-bottom: 25px;
     }
+
     label {
       font-weight: 600;
     }
-    input, textarea, select {
+
+    input,
+    textarea,
+    select {
       width: 100%;
       padding: 10px;
       margin-top: 8px;
@@ -34,6 +41,7 @@
       border-radius: 6px;
       font-size: 15px;
     }
+
     button {
       background-color: #0078d4;
       color: white;
@@ -43,9 +51,11 @@
       cursor: pointer;
       font-weight: 600;
     }
+
     button:hover {
       background-color: #005ea0;
     }
+
     .result {
       background: #f0f0f5;
       border-radius: 8px;
@@ -54,11 +64,13 @@
       border-left: 6px solid #0078d4;
       font-family: "Segoe UI", sans-serif;
     }
+
     .meta-line {
       font-size: 14px;
       color: #444;
       margin-top: 4px;
     }
+
     .tag {
       display: inline-block;
       background: #0078d4;
@@ -68,6 +80,7 @@
       font-size: 12px;
       margin-right: 6px;
     }
+
     .model-tag {
       display: inline-block;
       background: #107c10;
@@ -77,6 +90,7 @@
       font-size: 12px;
       margin-right: 6px;
     }
+
     .metadata {
       background: #272822;
       color: #f8f8f2;
@@ -86,18 +100,38 @@
       overflow-x: auto;
       font-size: 13px;
     }
+
     details summary {
       cursor: pointer;
       color: #0078d4;
       font-weight: bold;
       margin-top: 6px;
     }
-    pre { margin: 0; }
-    .string { color: #a6e22e; }
-    .number { color: #ae81ff; }
-    .boolean { color: #66d9ef; }
-    .null { color: #f92672; }
-    .key { color: #fd971f; }
+
+    pre {
+      margin: 0;
+    }
+
+    .string {
+      color: #a6e22e;
+    }
+
+    .number {
+      color: #ae81ff;
+    }
+
+    .boolean {
+      color: #66d9ef;
+    }
+
+    .null {
+      color: #f92672;
+    }
+
+    .key {
+      color: #fd971f;
+    }
+
     .debug-info {
       background: #fff3cd;
       border: 1px solid #ffeaa7;
@@ -108,6 +142,7 @@
     }
   </style>
 </head>
+
 <body>
   <h1>⚖️ Legal Semantic Pipeline</h1>
 
@@ -199,7 +234,7 @@
             // FIXED: Get type from the correct location - try both root and metadata
             const chunkType = r.type || (r.metadata && r.metadata.type) || "Legal_Content";
             const meta = r.metadata || {};
-            
+
             resultsDiv.innerHTML += `
               <div class="result">
                 <strong>#${i + 1} (Score: ${r.score.toFixed(4)})</strong><br>
@@ -309,4 +344,5 @@
     }
   </script>
 </body>
+
 </html>

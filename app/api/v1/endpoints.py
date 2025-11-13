@@ -113,16 +113,21 @@ async def query_twin(
             f"[METRICS] Search duration={duration:.2f}s | results={len(filtered_results)}"
         )
 
-        # ✅ Prepare structured response
-        results = [
-            SearchResult(
+        # ✅ Prepare structured response - FIXED: Include type field
+        results = []
+        for r in filtered_results:
+            # Extract metadata and include type at the root level
+            metadata = r.get("metadata", {})
+            
+            # Create SearchResult with type at root level
+            result = SearchResult(
                 chunk_text=r.get("chunk_text", ""),
                 citation_id=r.get("document_id", r.get("citation_id", "")),
                 score=round(r.get("score", 0), 4),
+                type=r.get("type", ""),  # Add type at root level
                 metadata=r.get("metadata", {}),
             )
-            for r in filtered_results
-        ]
+            results.append(result)
 
         logger.info(f"[QUERY] ✅ Returning {len(results)} results for query '{query}'")
 
