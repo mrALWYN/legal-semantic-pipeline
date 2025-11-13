@@ -149,11 +149,31 @@
   <!-- Upload PDF Section -->
   <section>
     <h2>📄 Upload Legal PDF</h2>
-    <label for="modelSelect">🤖 Select Chunking Model:</label>
+    
+    <label for="modelSelect">🤖 Select Embedding Model:</label>
     <select id="modelSelect">
       <option value="all-MiniLM-L6-v2">all-MiniLM-L6-v2 (Fast, lightweight)</option>
       <option value="all-mpnet-base-v2">all-mpnet-base-v2 (High quality)</option>
     </select>
+
+    <!-- Chunking Configuration Section -->
+    <section>
+      <h3>⚙️ Chunking Configuration</h3>
+      <label for="chunkingMethod">Chunking Method:</label>
+      <select id="chunkingMethod">
+        <option value="semantic">Semantic Chunking</option>
+        <option value="recursive">Recursive Chunking</option>
+      </select>
+
+      <label for="minChunkSize">Min Chunk Size (chars):</label>
+      <input type="number" id="minChunkSize" value="500" min="100" max="2000">
+
+      <label for="maxChunkSize">Max Chunk Size (chars):</label>
+      <input type="number" id="maxChunkSize" value="4500" min="1000" max="10000">
+
+      <label for="chunkOverlap">Chunk Overlap (chars):</label>
+      <input type="number" id="chunkOverlap" value="250" min="0" max="1000">
+    </section>
 
     <input type="file" id="pdfFile" accept=".pdf" />
     <button onclick="uploadPDF()">Upload & Process</button>
@@ -175,7 +195,6 @@
     </select>
 
     <button onclick="queryTwin()">Search</button>
-    <button onclick="queryTwinDebug()" style="background-color: #e67e22;">🔧 Debug Search</button>
     <div id="queryResults"></div>
   </section>
 
@@ -186,6 +205,12 @@
       const status = document.getElementById("uploadStatus");
       const modelSelect = document.getElementById("modelSelect");
       const selectedModel = modelSelect.value;
+      
+      // Chunking parameters
+      const chunkingMethod = document.getElementById("chunkingMethod").value;
+      const minChunkSize = parseInt(document.getElementById("minChunkSize").value);
+      const maxChunkSize = parseInt(document.getElementById("maxChunkSize").value);
+      const chunkOverlap = parseInt(document.getElementById("chunkOverlap").value);
 
       if (!fileInput.files.length) {
         alert("Please select a PDF file first!");
@@ -195,6 +220,11 @@
       const formData = new FormData();
       formData.append("file", fileInput.files[0]);
       formData.append("embedding_model", selectedModel);
+      formData.append("chunking_method", chunkingMethod);
+      formData.append("min_chunk_size", minChunkSize);
+      formData.append("max_chunk_size", maxChunkSize);
+      formData.append("chunk_overlap", chunkOverlap);
+      
       status.textContent = "Uploading and processing with model: " + selectedModel + " ⏳";
 
       try {
@@ -208,6 +238,25 @@
       } catch (err) {
         status.textContent = "❌ Upload error: " + err.message;
       }
+    }
+
+    // ---- Display Chunking Metadata ----
+    function displayChunkingMetadata(metadata) {
+      if (!metadata || Object.keys(metadata).length === 0) {
+        return '<div class="meta-line">No chunking metadata available</div>';
+      }
+      
+      return `
+        <div class="meta-line">
+          <span class="model-tag">Model: ${metadata.embedding_model || 'N/A'}</span>
+          <span class="model-tag">Method: ${metadata.chunking_method || 'N/A'}</span>
+        </div>
+        <div class="meta-line">
+          Min Size: ${metadata.min_chunk_size || 'N/A'} |
+          Max Size: ${metadata.max_chunk_size || 'N/A'} |
+          Overlap: ${metadata.chunk_overlap || 'N/A'}
+        </div>
+      `;
     }
 
     // ---- Query Twin ----
@@ -234,11 +283,13 @@
             // FIXED: Get type from the correct location - try both root and metadata
             const chunkType = r.type || (r.metadata && r.metadata.type) || "Legal_Content";
             const meta = r.metadata || {};
+            const chunkingMeta = r.chunking_metadata || {};
 
             resultsDiv.innerHTML += `
               <div class="result">
                 <strong>#${i + 1} (Score: ${r.score.toFixed(4)})</strong><br>
                 <div class="meta-line"><em>Citation:</em> ${r.citation_id || "N/A"}</div>
+                ${displayChunkingMetadata(chunkingMeta)}
                 <div class="meta-line">
                   <span class="tag">${chunkType}</span>
                   Confidence: ${(meta.confidence ?? r.confidence ?? 0).toFixed(2)} |
@@ -263,67 +314,6 @@
         }
       } catch (err) {
         resultsDiv.innerHTML = "❌ Search failed: " + err.message;
-      }
-    }
-
-    // ---- DEBUG VERSION: Shows the actual data structure ----
-    async function queryTwinDebug() {
-      const queryText = document.getElementById("queryText").value.trim();
-      const topK = document.getElementById("topK").value;
-      const resultsDiv = document.getElementById("queryResults");
-
-      if (!queryText) {
-        alert("Please enter a query!");
-        return;
-      }
-
-      resultsDiv.innerHTML = "🔍 Debugging... ⏳";
-
-      try {
-        const res = await fetch(`/api/v1/query-twin?query=${encodeURIComponent(queryText)}&top_k=${topK}`);
-        const data = await res.json();
-
-        console.log("DEBUG - Full API Response:", data);
-
-        if (res.ok && data.results && data.results.length) {
-          resultsDiv.innerHTML = `
-            <h3>🔧 DEBUG MODE - Showing Top ${data.results.length} Results:</h3>
-            <div class="debug-info">
-              <strong>API Response Structure:</strong><br>
-              <pre>${JSON.stringify(data.results[0], null, 2)}</pre>
-            </div>`;
-
-          data.results.forEach((r, i) => {
-            // Show exactly where the data is located
-            resultsDiv.innerHTML += `
-              <div class="result">
-                <strong>#${i + 1} (Score: ${r.score.toFixed(4)})</strong><br>
-                
-                <div class="debug-info">
-                  <strong>Data Location Debug:</strong><br>
-                  - r.type: <code>"${r.type || 'undefined'}"</code><br>
-                  - r.metadata.type: <code>"${r.metadata ? r.metadata.type : 'no metadata'}"</code><br>
-                  - r.metadata: <code>${r.metadata ? JSON.stringify(r.metadata) : 'undefined'}</code>
-                </div>
-                
-                <div class="meta-line"><em>Citation:</em> ${r.citation_id || "N/A"}</div>
-                <div class="meta-line">
-                  <span class="tag" style="background:#e74c3c">Type: ${r.type || 'NOT_FOUND'}</span>
-                  <span class="tag" style="background:#27ae60">Meta Type: ${r.metadata ? r.metadata.type : 'NO_META'}</span>
-                </div>
-                <p>${r.chunk_text}</p>
-                
-                <details>
-                  <summary>📋 View Complete Result Object</summary>
-                  <div class="metadata"><pre>${syntaxHighlight(r)}</pre></div>
-                </details>
-              </div>`;
-          });
-        } else {
-          resultsDiv.innerHTML = "No results found.";
-        }
-      } catch (err) {
-        resultsDiv.innerHTML = "❌ Debug failed: " + err.message;
       }
     }
 

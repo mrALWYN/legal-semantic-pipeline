@@ -184,6 +184,8 @@ class VectorStoreService:
                             "has_citations": bool(chunk.get("has_citations", False)),
                             "has_statutes": bool(chunk.get("has_statutes", False)),
                             "has_parties": bool(chunk.get("has_parties", False)),
+                            # Include chunking metadata if available
+                            "chunking_metadata": chunk.get("chunking_metadata", {}),
                         }
                     )
                     batch_points.append(point)
@@ -305,7 +307,9 @@ class VectorStoreService:
                         "has_citations": payload.get("has_citations"),
                         "has_statutes": payload.get("has_statutes"),
                         "has_parties": payload.get("has_parties"),
-                    }
+                    },
+                    # Include chunking metadata in search results
+                    "chunking_metadata": payload.get("chunking_metadata", {})
                 })
 
             # Sort by score (descending)

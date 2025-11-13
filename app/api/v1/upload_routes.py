@@ -7,7 +7,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from fastapi.responses import JSONResponse
 from pdf2image import convert_from_bytes
 from app.services.ocr import OCRService
-from app.services.chunking import SemanticLegalChunker, DEFAULT_MODEL
+from app.services.chunking import SemanticLegalChunker, RecursiveChunker, DEFAULT_MODEL
 from app.services.vector_store import VectorStoreService
 from app.core.config import settings
 
@@ -19,9 +19,13 @@ logger = logging.getLogger(__name__)
 async def upload_pdf(
     file: UploadFile = File(...),
     embedding_model: str = Form(DEFAULT_MODEL),
+    chunking_method: str = Form("semantic"),
+    min_chunk_size: int = Form(500),
+    max_chunk_size: int = Form(4500),
+    chunk_overlap: int = Form(250),
 ):
     """
-    Upload and process a legal PDF.
+    Upload and process a legal PDF with custom chunking parameters.
     Uses pre-cached EasyOCR models for fast OCR processing.
     Memory optimized for large documents.
     """
@@ -53,15 +57,26 @@ async def upload_pdf(
         del pdf_bytes
         gc.collect()
 
-        # ✅ Perform chunking with selected model
+        # ✅ Perform chunking with selected model and parameters
         logger.info(f"[UPLOAD] 🔄 Starting chunking with model: {embedding_model}")
         
-        chunker = SemanticLegalChunker(
-            min_chunk_size=settings.CHUNK_SIZE,
-            max_chunk_size=settings.MAX_CHUNK_SIZE,
-            chunk_overlap=settings.CHUNK_OVERLAP,
-            embedding_model=embedding_model,
-        )
+        # Select chunker based on method
+        if chunking_method == "semantic":
+            chunker = SemanticLegalChunker(
+                min_chunk_size=min_chunk_size,
+                max_chunk_size=max_chunk_size,
+                chunk_overlap=chunk_overlap,
+                embedding_model=embedding_model,
+            )
+        elif chunking_method == "recursive":
+            chunker = RecursiveChunker(
+                min_chunk_size=min_chunk_size,
+                max_chunk_size=max_chunk_size,
+                chunk_overlap=chunk_overlap,
+                embedding_model=embedding_model,
+            )
+        else:
+            raise HTTPException(status_code=400, detail="Invalid chunking method")
 
         document_id = file.filename.replace(".pdf", "").replace(" ", "_")
         chunks = chunker.chunk_document(extracted_text, document_id)
@@ -70,6 +85,16 @@ async def upload_pdf(
             raise HTTPException(status_code=400, detail="No chunks could be created from the PDF")
 
         logger.info(f"[UPLOAD] ✅ Created {len(chunks)} chunks")
+
+        # ✅ Add chunking metadata to each chunk
+        for chunk in chunks:
+            chunk["chunking_metadata"] = {
+                "chunking_method": chunking_method,
+                "embedding_model": embedding_model,
+                "min_chunk_size": min_chunk_size,
+                "max_chunk_size": max_chunk_size,
+                "chunk_overlap": chunk_overlap
+            }
 
         # ✅ Cleanup
         del extracted_text
@@ -88,6 +113,12 @@ async def upload_pdf(
             "document_id": document_id,
             "chunks_count": len(chunks),
             "embedding_model": embedding_model,
+            "chunking_method": chunking_method,
+            "chunking_parameters": {
+                "min_chunk_size": min_chunk_size,
+                "max_chunk_size": max_chunk_size,
+                "chunk_overlap": chunk_overlap
+            },
             "text_length": len(extracted_text) if 'extracted_text' in locals() else 0,
         }, status_code=200)
 

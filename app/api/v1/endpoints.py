@@ -119,13 +119,14 @@ async def query_twin(
             # Extract metadata and include type at the root level
             metadata = r.get("metadata", {})
             
-            # Create SearchResult with type at root level
+            # Create SearchResult with type at root level and chunking metadata
             result = SearchResult(
                 chunk_text=r.get("chunk_text", ""),
                 citation_id=r.get("document_id", r.get("citation_id", "")),
                 score=round(r.get("score", 0), 4),
                 type=r.get("type", ""),  # Add type at root level
                 metadata=r.get("metadata", {}),
+                chunking_metadata=r.get("chunking_metadata", {}),  # Add chunking metadata
             )
             results.append(result)
 
