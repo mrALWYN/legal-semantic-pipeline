@@ -1,6 +1,4 @@
-"""
-⚖️ Configuration modules
-"""
-from app.config import model_config
+"""Configuration module for Legal Semantic Pipeline"""
+from .chunking_config import ChunkingRequest, get_chunker
 
-__all__ = ["model_config"]
+__all__ = ["ChunkingRequest", "get_chunker"]

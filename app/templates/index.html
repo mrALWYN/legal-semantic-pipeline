@@ -98,6 +98,14 @@
     .boolean { color: #66d9ef; }
     .null { color: #f92672; }
     .key { color: #fd971f; }
+    .debug-info {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 12px;
+    }
   </style>
 </head>
 <body>
@@ -132,6 +140,7 @@
     </select>
 
     <button onclick="queryTwin()">Search</button>
+    <button onclick="queryTwinDebug()" style="background-color: #e67e22;">🔧 Debug Search</button>
     <div id="queryResults"></div>
   </section>
 
@@ -154,7 +163,7 @@
       status.textContent = "Uploading and processing with model: " + selectedModel + " ⏳";
 
       try {
-        const res = await fetch("/upload-pdf", { method: "POST", body: formData });
+        const res = await fetch("/api/v1/upload-pdf", { method: "POST", body: formData });
         const data = await res.json();
         if (res.ok) {
           status.textContent = "✅ " + data.message + " (Model: " + selectedModel + ")";
@@ -180,36 +189,37 @@
       resultsDiv.innerHTML = "Searching... ⏳";
 
       try {
-        const res = await fetch(`/api/v1/module3/query-twin?query=${encodeURIComponent(queryText)}&top_k=${topK}`);
+        const res = await fetch(`/api/v1/query-twin?query=${encodeURIComponent(queryText)}&top_k=${topK}`);
         const data = await res.json();
 
         if (res.ok && data.results && data.results.length) {
           resultsDiv.innerHTML = `<h3>Showing Top ${data.results.length} Results for "<em>${data.query}</em>":</h3>`;
 
           data.results.forEach((r, i) => {
+            // FIXED: Get type from the correct location - try both root and metadata
+            const chunkType = r.type || (r.metadata && r.metadata.type) || "Legal_Content";
             const meta = r.metadata || {};
-
+            
             resultsDiv.innerHTML += `
               <div class="result">
                 <strong>#${i + 1} (Score: ${r.score.toFixed(4)})</strong><br>
                 <div class="meta-line"><em>Citation:</em> ${r.citation_id || "N/A"}</div>
                 <div class="meta-line">
-                  <span class="tag">${meta.type || "Unknown"}</span>
-                  ${meta.chunking_model ? `<span class="model-tag">🤖 ${meta.chunking_model}</span>` : ""}
-                  Confidence: ${(meta.confidence ?? 0).toFixed(2)} |
-                  Sentences: ${meta.sentence_count ?? "?"} |
-                  Chars: ${meta.char_count ?? "?"}
+                  <span class="tag">${chunkType}</span>
+                  Confidence: ${(meta.confidence ?? r.confidence ?? 0).toFixed(2)} |
+                  Sentences: ${meta.sentence_count ?? r.sentence_count ?? "?"} |
+                  Chars: ${meta.char_count ?? r.char_count ?? "?"}
                 </div>
                 <div class="meta-line">
-                  ${meta.has_citations ? "📑 Has Citations" : "—"} •
-                  ${meta.has_statutes ? "⚖️ Has Statutes" : "—"} •
-                  ${meta.has_parties ? "👥 Mentions Parties" : "—"}
+                  ${(meta.has_citations || r.has_citations) ? "📑 Has Citations" : "—"} •
+                  ${(meta.has_statutes || r.has_statutes) ? "⚖️ Has Statutes" : "—"} •
+                  ${(meta.has_parties || r.has_parties) ? "👥 Mentions Parties" : "—"}
                 </div>
                 <p>${r.chunk_text}</p>
 
                 <details>
                   <summary>📘 View Full Metadata</summary>
-                  <div class="metadata"><pre>${syntaxHighlight(meta)}</pre></div>
+                  <div class="metadata"><pre>${syntaxHighlight(r)}</pre></div>
                 </details>
               </div>`;
           });
@@ -221,9 +231,70 @@
       }
     }
 
+    // ---- DEBUG VERSION: Shows the actual data structure ----
+    async function queryTwinDebug() {
+      const queryText = document.getElementById("queryText").value.trim();
+      const topK = document.getElementById("topK").value;
+      const resultsDiv = document.getElementById("queryResults");
+
+      if (!queryText) {
+        alert("Please enter a query!");
+        return;
+      }
+
+      resultsDiv.innerHTML = "🔍 Debugging... ⏳";
+
+      try {
+        const res = await fetch(`/api/v1/query-twin?query=${encodeURIComponent(queryText)}&top_k=${topK}`);
+        const data = await res.json();
+
+        console.log("DEBUG - Full API Response:", data);
+
+        if (res.ok && data.results && data.results.length) {
+          resultsDiv.innerHTML = `
+            <h3>🔧 DEBUG MODE - Showing Top ${data.results.length} Results:</h3>
+            <div class="debug-info">
+              <strong>API Response Structure:</strong><br>
+              <pre>${JSON.stringify(data.results[0], null, 2)}</pre>
+            </div>`;
+
+          data.results.forEach((r, i) => {
+            // Show exactly where the data is located
+            resultsDiv.innerHTML += `
+              <div class="result">
+                <strong>#${i + 1} (Score: ${r.score.toFixed(4)})</strong><br>
+                
+                <div class="debug-info">
+                  <strong>Data Location Debug:</strong><br>
+                  - r.type: <code>"${r.type || 'undefined'}"</code><br>
+                  - r.metadata.type: <code>"${r.metadata ? r.metadata.type : 'no metadata'}"</code><br>
+                  - r.metadata: <code>${r.metadata ? JSON.stringify(r.metadata) : 'undefined'}</code>
+                </div>
+                
+                <div class="meta-line"><em>Citation:</em> ${r.citation_id || "N/A"}</div>
+                <div class="meta-line">
+                  <span class="tag" style="background:#e74c3c">Type: ${r.type || 'NOT_FOUND'}</span>
+                  <span class="tag" style="background:#27ae60">Meta Type: ${r.metadata ? r.metadata.type : 'NO_META'}</span>
+                </div>
+                <p>${r.chunk_text}</p>
+                
+                <details>
+                  <summary>📋 View Complete Result Object</summary>
+                  <div class="metadata"><pre>${syntaxHighlight(r)}</pre></div>
+                </details>
+              </div>`;
+          });
+        } else {
+          resultsDiv.innerHTML = "No results found.";
+        }
+      } catch (err) {
+        resultsDiv.innerHTML = "❌ Debug failed: " + err.message;
+      }
+    }
+
     // ---- Pretty Print JSON Metadata ----
     function syntaxHighlight(json) {
-      if (typeof json != 'string') json = JSON.stringify(json, undefined, 2);
+      if (typeof json != 'string') json = JSON.stringify(json, null, 2);
       json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       return json.replace(
         /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,

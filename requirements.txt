@@ -2,6 +2,11 @@
 # ⚖️  Legal Semantic Pipeline
 # ==============================
 
+# --- Core ML/DL Framework (must come first) ---
+torch==2.2.0
+torchvision==0.17.0
+transformers==4.36.2
+
 # --- FastAPI core ---
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
@@ -14,17 +19,24 @@ python-dotenv==1.0.0
 langchain==0.1.13
 langchain-community==0.0.33
 langchain-text-splitters==0.0.2
-langchain-experimental==0.0.52    # ✅ Needed for SemanticChunker
-langsmith==0.1.17
+langchain-experimental==0.0.52
 
 # --- Vector DB & embeddings ---
-qdrant-client==1.7.0
+torch==2.2.0
+torchvision==0.17.0
+qdrant-client==1.6.4
 sentence-transformers==2.3.1
+numpy==1.24.3
 
 # --- PDF / text extraction ---
-pymupdf==1.22.3                   # ✅ Installs as 'fitz' module
-pymupdf-fonts==1.0.5              # ✅ Optional: font support for PyMuPDF
+pdf2image==1.16.3
+pymupdf==1.22.3
+pymupdf-fonts==1.0.5
+Pillow==10.0.1
 
 # --- Experiment tracking & metrics ---
 mlflow==2.14.3
 prometheus-client==0.16.0
+
+# --- Additional utilities ---
+requests==2.31.0

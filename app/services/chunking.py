@@ -2,6 +2,7 @@ import re
 import time
 import logging
 import os
+import warnings
 from typing import List, Dict
 from collections import Counter
 from dataclasses import dataclass
@@ -12,7 +13,9 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 
 # Internal imports
 from app.services.metrics import ingest_chunks, embedding_time_hist
-from app.services import mlflow_service
+from app.services.mlflow_service import (
+    start_run, log_model_metadata, log_metrics, log_params, end_run
+)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -93,9 +96,9 @@ class SemanticLegalChunker:
 
     def __init__(
         self,
-        min_chunk_size,
-        max_chunk_size,
-        chunk_overlap,
+        min_chunk_size: int,
+        max_chunk_size: int,
+        chunk_overlap: int,
         embedding_model: str = DEFAULT_MODEL,
     ):
         """
@@ -116,68 +119,114 @@ class SemanticLegalChunker:
         self.model_config = AVAILABLE_MODELS[embedding_model]
 
         # ✅ Use local cached models via HF_HOME environment variable
-        self.embedder = HuggingFaceEmbeddings(model_name=embedding_model)
+        logger.info(f"[CHUNKER] 🚀 Initializing embedding model: {embedding_model}")
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=FutureWarning)
+            warnings.filterwarnings("ignore", category=UserWarning)
+            self.embedder = HuggingFaceEmbeddings(model_name=embedding_model)
+        
         self.classifier = LegalChunkClassifier()
 
         logger.info(
-            f"[INIT] SemanticLegalChunker(semantic_split, "
+            f"[CHUNKER] ✅ SemanticLegalChunker initialized | "
             f"min={min_chunk_size}, max={max_chunk_size}, overlap={chunk_overlap}, "
-            f"model={embedding_model} ({self.model_config['description']}))"
+            f"model={embedding_model} ({self.model_config['description']})"
         )
 
     # --------------------------------------------------------
     def _semantic_split(self, text: str) -> List[str]:
         """Perform size-controlled semantic splitting."""
+        logger.info(f"[CHUNKER] 📊 Starting semantic split | text_length: {len(text)} chars")
+        
         splitter = SemanticChunker(self.embedder)
 
         # LangChain's semantic splitter doesn't directly expose size limits,
         # so we manually re-merge chunks post-split.
+        logger.info("[CHUNKER] 🔄 Creating documents with semantic splitter...")
         docs = splitter.create_documents([text])
         raw_chunks = [d.page_content.strip() for d in docs if d.page_content.strip()]
 
+        logger.info(f"[CHUNKER] 📋 Semantic split produced {len(raw_chunks)} raw chunks")
+        
+        if not raw_chunks:
+            logger.warning("[CHUNKER] ⚠️ No chunks produced from semantic splitter")
+            return [text[:self.max_chunk_size]]
+
+        # Merge small chunks to meet size requirements
+        logger.info("[CHUNKER] 🔄 Merging chunks to meet size requirements...")
         merged_chunks = []
         buffer = ""
 
-        for chunk in raw_chunks:
+        for i, chunk in enumerate(raw_chunks):
+            logger.debug(f"[CHUNKER] Processing raw chunk {i+1}/{len(raw_chunks)} | size: {len(chunk)}")
+            
             if len(buffer) + len(chunk) <= self.max_chunk_size:
                 buffer += " " + chunk
+                logger.debug(f"[CHUNKER]   Added to buffer | buffer size: {len(buffer)}")
             else:
                 if len(buffer) >= self.min_chunk_size:
                     merged_chunks.append(buffer.strip())
+                    logger.debug(f"[CHUNKER]   ✅ Saved merged chunk {len(merged_chunks)} | size: {len(buffer)}")
+                else:
+                    logger.debug(f"[CHUNKER]   ⚠️ Buffer too small ({len(buffer)}), discarding")
                 buffer = chunk
 
         if len(buffer) >= self.min_chunk_size:
             merged_chunks.append(buffer.strip())
+            logger.debug(f"[CHUNKER] ✅ Saved final buffer chunk | size: {len(buffer)}")
+        elif buffer and merged_chunks:
+            # Append remaining text to last chunk if it's too small
+            merged_chunks[-1] += " " + buffer
+            logger.debug(f"[CHUNKER] 🔄 Appended remaining text to last chunk")
 
         # Add sliding window overlap for continuity
+        logger.info("[CHUNKER] 🔄 Applying sliding window overlap...")
         final_chunks = []
         for i, chunk in enumerate(merged_chunks):
             window_text = chunk
-            if i > 0:
-                prev_tail = merged_chunks[i - 1][-self.chunk_overlap :]
+            if i > 0 and self.chunk_overlap > 0:
+                prev_tail = merged_chunks[i - 1][-self.chunk_overlap:]
                 window_text = prev_tail + "\n" + chunk
             final_chunks.append(window_text.strip())
+            logger.debug(f"[CHUNKER]   Chunk {i+1}: {len(window_text)} chars")
 
+        logger.info(f"[CHUNKER] ✅ Semantic split complete | {len(final_chunks)} final chunks")
         return final_chunks
 
     # --------------------------------------------------------
     def chunk_document(self, text: str, document_id: str) -> List[Dict]:
         """Perform semantic chunking, classification, and metadata enrichment."""
+        logger.info(f"[CHUNKER] 🚀 Starting chunking for document: {document_id}")
+        
         if not text or not isinstance(text, str):
-            logger.warning("[CHUNKER] Empty or invalid text input.")
+            logger.warning("[CHUNKER] ❌ Empty or invalid text input.")
             return []
 
+        # Step 1: Perform semantic splitting
+        logger.info(f"[CHUNKER] 📝 Step 1/3: Semantic splitting...")
         start_time = time.time()
-        logger.info(f"[CHUNKER] Starting semantic chunking with model: {self.model_name}...")
         chunks = self._semantic_split(text)
         chunk_time = time.time() - start_time
-        logger.info(f"[CHUNKER] ✅ Generated {len(chunks)} legal-aware chunks in {chunk_time:.2f}s")
+        logger.info(f"[CHUNKER] ✅ Step 1 Complete | {len(chunks)} chunks in {chunk_time:.2f}s")
 
+        if not chunks:
+            return []
+
+        # Step 2: Classify and enrich chunks
+        logger.info(f"[CHUNKER] 📝 Step 2/3: Classifying and enriching chunks...")
         classified_chunks = []
+        classification_start = time.time()
+        
         for i, chunk_text in enumerate(chunks):
+            if not chunk_text.strip():
+                logger.debug(f"[CHUNKER]   Skipping empty chunk {i+1}")
+                continue
+            
+            logger.debug(f"[CHUNKER]   Classifying chunk {i+1}/{len(chunks)} | size: {len(chunk_text)}")
             classification = self.classifier.classify_chunk(chunk_text)
+            
             chunk_data = {
-                "chunk_id": str(i),
+                "chunk_id": f"{document_id}_{i}",
                 "document_id": document_id,
                 "text": chunk_text,
                 "type": classification.category,
@@ -189,11 +238,20 @@ class SemanticLegalChunker:
                 "has_parties": bool(re.search(r"\b(?:petitioner|respondent|appellant|defendant)\b", chunk_text, re.IGNORECASE)),
             }
             classified_chunks.append(chunk_data)
+            
+            # Progress update every 10 chunks
+            if (i + 1) % 10 == 0:
+                logger.info(f"[CHUNKER]   ✅ Classified {i+1}/{len(chunks)} chunks")
+
+        classification_time = time.time() - classification_start
+        logger.info(f"[CHUNKER] ✅ Step 2 Complete | {len(classified_chunks)} classified in {classification_time:.2f}s")
 
         if not classified_chunks:
-            logger.warning("[CHUNKER] No valid chunks produced after filtering.")
+            logger.warning("[CHUNKER] ❌ No valid chunks produced after filtering.")
             return []
 
+        # Step 3: Calculate statistics and log metrics
+        logger.info(f"[CHUNKER] 📝 Step 3/3: Calculating statistics and logging metrics...")
         avg_size = sum(c["char_count"] for c in classified_chunks) / len(classified_chunks)
         type_dist = Counter(c["type"] for c in classified_chunks)
 
@@ -201,36 +259,49 @@ class SemanticLegalChunker:
         ingest_chunks.inc(len(classified_chunks))
         embedding_time_hist.observe(chunk_time)
 
+        # ✅ MLflow logging with proper error handling
+        run = None
         try:
-            run = mlflow_service.start_run(experiment_name="chunking_experiments")
-            mlflow_service.log_metrics({
-                "chunk_count": len(classified_chunks),
-                "chunk_time": chunk_time,
-                "avg_chunk_size": avg_size,
-            })
-            # ✅ Log which model was used
-            mlflow_service.log_params({
-                "chunking_model": self.model_name,
-                "model_dimensions": self.model_config["dimensions"],
-                "min_chunk_size": self.min_chunk_size,
-                "max_chunk_size": self.max_chunk_size,
-                "chunk_overlap": self.chunk_overlap,
-            })
-            for t, v in type_dist.items():
-                mlflow_service.log_metrics({f"type_{t}_count": v})
-            mlflow_service.log_model_metadata(
-                model_name=self.model_name,
-                embedding_dim=self.model_config["dimensions"],
-                chunk_size=self.min_chunk_size,
-                overlap=self.chunk_overlap,
-            )
-            mlflow_service.mlflow.end_run()
+            run = start_run(experiment_name="chunking_experiments")
+            if run:
+                log_params({
+                    "chunking_model": self.model_name,
+                    "model_dimensions": self.model_config["dimensions"],
+                    "min_chunk_size": self.min_chunk_size,
+                    "max_chunk_size": self.max_chunk_size,
+                    "chunk_overlap": self.chunk_overlap,
+                    "chunking_technique": "semantic",
+                })
+                
+                log_metrics({
+                    "chunk_count": len(classified_chunks),
+                    "chunk_time": chunk_time,
+                    "classification_time": classification_time,
+                    "avg_chunk_size": avg_size,
+                })
+                
+                # Log type distribution as metrics
+                for t, v in type_dist.items():
+                    log_metrics({f"type_{t}_count": v})
+                
+                logger.info("[CHUNKER] ✅ MLflow metrics logged successfully")
+                
         except Exception as e:
-            logger.warning(f"[MLFLOW] Failed to log chunking experiment: {e}")
+            logger.warning(f"[CHUNKER] ⚠️ MLflow logging failed: {e}")
+        finally:
+            if run:
+                end_run()
 
+        total_time = time.time() - start_time
         logger.info(
-            f"[CHUNKER] ✅ Finalized {len(classified_chunks)} chunks "
-            f"(avg size {avg_size:.0f} chars) | Type dist: {dict(type_dist)} | Model: {self.model_name}"
+            f"[CHUNKER] 🎉 CHUNKING COMPLETE\n"
+            f"  • Document: {document_id}\n"
+            f"  • Total chunks: {len(classified_chunks)}\n"
+            f"  • Avg chunk size: {avg_size:.0f} chars\n"
+            f"  • Type distribution: {dict(type_dist)}\n"
+            f"  • Total time: {total_time:.2f}s\n"
+            f"  • Model: {self.model_name}\n"
+            f"  • Chunking technique: semantic"
         )
 
         return classified_chunks
@@ -245,7 +316,13 @@ class RecursiveChunker:
     Simple paragraph/sentence-based recursive chunker with multi-model support.
     """
 
-    def __init__(self, min_chunk_size, max_chunk_size, chunk_overlap, embedding_model: str = DEFAULT_MODEL):
+    def __init__(
+        self,
+        min_chunk_size: int,
+        max_chunk_size: int,
+        chunk_overlap: int,
+        embedding_model: str = DEFAULT_MODEL
+    ):
         if embedding_model not in AVAILABLE_MODELS:
             embedding_model = DEFAULT_MODEL
 
@@ -256,19 +333,30 @@ class RecursiveChunker:
         self.model_config = AVAILABLE_MODELS[embedding_model]
         self.classifier = LegalChunkClassifier()
 
+        logger.info(
+            f"[CHUNKER] ✅ RecursiveChunker initialized | "
+            f"min={min_chunk_size}, max={max_chunk_size}, overlap={chunk_overlap}, "
+            f"model={embedding_model} ({self.model_config['description']})"
+        )
+
     # --------------------------------------------------------
     def _recursive_split(self, text: str) -> List[str]:
         """Recursively split text by paragraphs or sentences within size bounds."""
+        logger.debug(f"[CHUNKER-RECURSIVE] Recursive split | text length: {len(text)}")
+        
         if len(text) <= self.max_chunk_size:
-            return [text.strip()]
+            return [text.strip()] if text.strip() else []
 
         parts = [p for p in text.split("\n\n") if p.strip()]
         if len(parts) <= 1:
             sentences = re.split(r'(?<=[.!?])\s+', text)
             chunks, buffer = [], ""
             for s in sentences:
+                s = s.strip()
+                if not s:
+                    continue
                 if len(buffer) + len(s) <= self.max_chunk_size:
-                    buffer += " " + s
+                    buffer += (" " if buffer else "") + s
                 else:
                     if buffer:
                         chunks.append(buffer.strip())
@@ -283,23 +371,38 @@ class RecursiveChunker:
         return result
 
     def chunk_document(self, text: str, document_id: str) -> List[Dict]:
+        logger.info(f"[CHUNKER] 🚀 Starting recursive chunking for document: {document_id}")
+        
         if not text or not isinstance(text, str):
+            logger.warning("[CHUNKER-RECURSIVE] ❌ Empty or invalid text input")
             return []
 
+        # Step 1: Recursive splitting
+        logger.info(f"[CHUNKER] 📝 Step 1/3: Recursive splitting...")
         start_time = time.time()
         chunks = self._recursive_split(text)
         chunk_time = time.time() - start_time
-        logger.info(f"[CHUNKER-RECURSIVE] Generated {len(chunks)} chunks in {chunk_time:.2f}s with model: {self.model_name}")
+        
+        if not chunks:
+            logger.warning("[CHUNKER-RECURSIVE] ❌ No chunks produced")
+            return []
+        
+        logger.info(f"[CHUNKER] ✅ Step 1 Complete | {len(chunks)} raw chunks in {chunk_time:.2f}s")
 
+        # Step 2: Apply overlap and classify
+        logger.info(f"[CHUNKER] 📝 Step 2/3: Applying overlap and classifying...")
         final_chunks = []
+        classification_start = time.time()
+        
         for i, chunk in enumerate(chunks):
             chunk_text = chunk
-            if i > 0:
+            if i > 0 and self.chunk_overlap > 0:
                 tail = chunks[i - 1][-self.chunk_overlap:]
                 chunk_text = tail + "\n" + chunk
+            
             classification = self.classifier.classify_chunk(chunk_text)
             final_chunks.append({
-                "chunk_id": str(i),
+                "chunk_id": f"{document_id}_{i}",
                 "document_id": document_id,
                 "text": chunk_text,
                 "type": classification.category,
@@ -310,33 +413,66 @@ class RecursiveChunker:
                 "has_statutes": bool(re.search(r"\b(?:Section|Article)\s+\d+", chunk_text)),
                 "has_parties": bool(re.search(r"\b(?:petitioner|respondent|appellant|defendant)\b", chunk_text, re.IGNORECASE)),
             })
+            
+            # Progress update every 20 chunks
+            if (i + 1) % 20 == 0:
+                logger.info(f"[CHUNKER]   ✅ Processed {i+1}/{len(chunks)} chunks")
 
-        avg_size = sum(c["char_count"] for c in final_chunks) / len(final_chunks)
+        classification_time = time.time() - classification_start
+        logger.info(f"[CHUNKER] ✅ Step 2 Complete | {len(final_chunks)} classified in {classification_time:.2f}s")
+
+        # Step 3: Calculate statistics and log metrics
+        logger.info(f"[CHUNKER] 📝 Step 3/3: Calculating statistics and logging metrics...")
+        avg_size = sum(c["char_count"] for c in final_chunks) / len(final_chunks) if final_chunks else 0
         type_dist = Counter(c["type"] for c in final_chunks)
 
         # ✅ Metrics + MLflow with model info
         ingest_chunks.inc(len(final_chunks))
         embedding_time_hist.observe(chunk_time)
+        
+        # ✅ MLflow logging with proper error handling
+        run = None
         try:
-            run = mlflow_service.start_run(experiment_name="chunking_experiments")
-            mlflow_service.log_metrics({
-                "chunk_count": len(final_chunks),
-                "chunk_time": chunk_time,
-                "avg_chunk_size": avg_size,
-            })
-            mlflow_service.log_params({
-                "chunking_model": self.model_name,
-                "model_dimensions": self.model_config["dimensions"],
-                "chunking_strategy": "recursive",
-            })
-            for t, v in type_dist.items():
-                mlflow_service.log_metrics({f"type_{t}_count": v})
-            mlflow_service.mlflow.end_run()
+            run = start_run(experiment_name="chunking_experiments")
+            if run:
+                log_params({
+                    "chunking_model": self.model_name,
+                    "model_dimensions": self.model_config["dimensions"],
+                    "chunking_technique": "recursive",
+                    "min_chunk_size": self.min_chunk_size,
+                    "max_chunk_size": self.max_chunk_size,
+                    "chunk_overlap": self.chunk_overlap,
+                })
+                
+                log_metrics({
+                    "chunk_count": len(final_chunks),
+                    "chunk_time": chunk_time,
+                    "classification_time": classification_time,
+                    "avg_chunk_size": avg_size,
+                })
+                
+                # Log type distribution as metrics
+                for t, v in type_dist.items():
+                    log_metrics({f"type_{t}_count": v})
+                    
+                logger.info("[CHUNKER] ✅ MLflow metrics logged successfully")
+                
         except Exception as e:
-            logger.warning(f"[MLFLOW] Failed to log recursive chunking: {e}")
+            logger.warning(f"[CHUNKER] ⚠️ MLflow logging failed: {e}")
+        finally:
+            if run:
+                end_run()
 
+        total_time = time.time() - start_time
         logger.info(
-            f"[CHUNKER-RECURSIVE] ✅ {len(final_chunks)} chunks | avg size {avg_size:.0f} | "
-            f"dist: {dict(type_dist)} | Model: {self.model_name}"
+            f"[CHUNKER] 🎉 RECURSIVE CHUNKING COMPLETE\n"
+            f"  • Document: {document_id}\n"
+            f"  • Total chunks: {len(final_chunks)}\n"
+            f"  • Avg chunk size: {avg_size:.0f} chars\n"
+            f"  • Type distribution: {dict(type_dist)}\n"
+            f"  • Total time: {total_time:.2f}s\n"
+            f"  • Model: {self.model_name}\n"
+            f"  • Chunking technique: recursive"
         )
+
         return final_chunks

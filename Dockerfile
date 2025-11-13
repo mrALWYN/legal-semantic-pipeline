@@ -3,7 +3,7 @@
 # ============================================================
 FROM python:3.11-slim
 
-WORKDIR /
+WORKDIR /app
 
 # --- System dependencies (PDF, image libs) ---
 RUN apt-get update && apt-get install -y \
@@ -20,32 +20,22 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --upgrade pip setuptools wheel
 
 # --- Copy ONLY requirements.txt first (separate layer for caching) ---
-COPY requirements.txt /requirements.txt
+COPY requirements.txt /app/requirements.txt
 
 # --- Install Python dependencies (cached if requirements.txt unchanged) ---
-RUN pip install --no-cache-dir -r /requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# --- Pre-download ML models (sentence-transformers) ---
+# --- Create models directory (models downloaded at runtime) ---
 ENV HF_HOME=/app/models
-RUN mkdir -p /app/models && \
-    python - <<'EOF'
-from sentence_transformers import SentenceTransformer
-print("Downloading all-MiniLM-L6-v2...")
-SentenceTransformer('all-MiniLM-L6-v2')
-print("Downloading all-mpnet-base-v2...")
-SentenceTransformer('all-mpnet-base-v2')
-print("✅ Sentence-transformer models downloaded")
-EOF
+RUN mkdir -p /app/models && chmod -R 755 /app/models
 
 # --- Copy Application Source (last layer - rebuilds app code without pip) ---
-COPY ./app /app
+COPY ./app /app/app
 
 # --- Environment ---
-ENV PYTHONPATH=/
+ENV PYTHONPATH=/app
 ENV HF_HOME=/app/models
-
-# --- Permissions ---
-RUN chmod -R 755 /app/models || true
+ENV PYTHONUNBUFFERED=1
 
 # --- Run Server ---
 EXPOSE 8000

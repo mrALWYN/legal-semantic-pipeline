@@ -8,7 +8,7 @@ from datetime import datetime
 from app.core.config import settings
 from app.services.metrics import feedback_counter
 
-router = APIRouter(prefix="/api/v1", tags=["Feedback"])
+router = APIRouter(prefix="", tags=["Feedback"])
 logger = logging.getLogger(__name__)
 
 class FeedbackEntry(BaseModel):

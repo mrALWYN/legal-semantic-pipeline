@@ -1,22 +1,29 @@
 version: "3.8"
+
 services:
   # =======================
   # 🧠 QDRANT VECTOR DB
   # =======================
+# Update the qdrant service in docker-compose.yml
   qdrant:
-    image: qdrant/qdrant:latest
+    image: qdrant/qdrant:v1.7.4  # Use specific version
     container_name: qdrant
     ports:
       - "6333:6333"
     volumes:
       - qdrant_data:/qdrant/storage
-    restart: always
+    environment:
+      QDRANT__STORAGE__STORAGE_PATH: "/qdrant/storage"
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
       interval: 10s
       timeout: 10s
       retries: 15
       start_period: 30s
+    networks:
+      - legal-net
+
 
   # =======================
   # 📊 MLFLOW TRACKING SERVER
@@ -33,19 +40,16 @@ services:
       - ./mlflow_artifacts:/mlflow/artifacts
       - ./mlflow_db:/mlflow/db
     command: >
-      mlflow server
-      --backend-store-uri sqlite:////mlflow/db/mlflow.db
-      --default-artifact-root /mlflow/artifacts
-      --host 0.0.0.0
-      --port 5000
-      --serve-artifacts
+      mlflow server --backend-store-uri sqlite:////mlflow/db/mlflow.db --default-artifact-root /mlflow/artifacts --host 0.0.0.0 --port 5000 --serve-artifacts
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      test: [ "CMD", "curl", "-f", "http://localhost:5000" ]
       interval: 15s
       timeout: 10s
       retries: 15
       start_period: 30s
+    networks:
+      - legal-net
 
   # =======================
   # ⚖️ FASTAPI LEGAL API
@@ -61,28 +65,29 @@ services:
       - COLLECTION_NAME=legal_precedents
       - MLFLOW_TRACKING_URI=http://mlflow:5000
       - REGISTERED_MODEL_NAME=legal-embed-model
-      - PYTHONPATH=/
+      - PYTHONPATH=/app
       - HF_HOME=/app/models
       - PYTHONUNBUFFERED=1
+      - GIT_PYTHON_REFRESH=quiet
     ports:
       - "8000:8000"
     volumes:
-      - ./app:/app:cached
+      - ./app:/app/app:cached
       - huggingface_models:/app/models
     restart: always
-    command: >
-      sh -c "
-      echo '⏳ Waiting for dependencies...' &&
-      until curl -fsS http://qdrant:6333/readyz; do
-        echo '⏳ Waiting for Qdrant...';
-        sleep 2;
-      done;
-      until curl -fsS http://mlflow:5000; do
-        echo '⏳ Waiting for MLflow...';
-        sleep 2;
-      done;
-      echo '✅ Dependencies ready. Starting FastAPI...' &&
-      uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1
+    networks:
+      - legal-net
+    depends_on:
+      - qdrant
+      - mlflow
+
+# =======================
+# 🕸️ NETWORKS  (must be at root)
+# =======================
+networks:
+  legal-net:
+    driver: bridge
 
 # =======================
 # 🗄️ NAMED VOLUMES

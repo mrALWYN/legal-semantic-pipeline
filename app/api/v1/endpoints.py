@@ -19,7 +19,7 @@ from app.services.metrics import (
 )
 
 logger = logging.getLogger(__name__)
-router = APIRouter()
+router = APIRouter(prefix="", tags=["Core Operations"])
 
 
 # ============================================================

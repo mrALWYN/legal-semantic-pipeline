@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from app.services.vector_store import VectorStoreService
 from app.core.config import settings
 
-router = APIRouter(prefix="/api/v1/health", tags=["System"])
+router = APIRouter(prefix="/health", tags=["System"])
 logger = logging.getLogger(__name__)
 
 @router.get("")

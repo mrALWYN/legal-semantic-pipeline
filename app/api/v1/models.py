@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from app.services.mlflow_service import get_current_production_model, list_experiments, promote_model_version, compare_experiments
 from app.core.config import settings
 
-router = APIRouter(prefix="/api/v1/models", tags=["Models"])
+router = APIRouter(prefix="/models", tags=["Model Management"])
 logger = logging.getLogger(__name__)
 
 class PromoteRequest(BaseModel):

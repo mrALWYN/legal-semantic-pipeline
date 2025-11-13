@@ -1,6 +1,5 @@
-"""
-⚖️ Core services - OCR, chunking, vector store, metrics, MLflow
-"""
+"""Services module for Legal Semantic Pipeline"""
+# Only import modules that actually exist
 from app.services import ocr
 from app.services import chunking
 from app.services import vector_store

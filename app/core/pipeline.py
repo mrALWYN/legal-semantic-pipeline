@@ -2,15 +2,15 @@ import uuid
 import time
 import logging
 
-import mlflow
-
 from app.core.config import settings
 from app.services.chunking import SemanticLegalChunker
 from app.services.vector_store import VectorStoreService
 
 # Newly added imports
 from app.services.chunking import RecursiveChunker  # supports recursive chunking experiments
-from app.services import mlflow_service
+from app.services.mlflow_service import (
+    start_run, log_model_metadata, log_metrics, log_params, end_run
+)
 from app.services.metrics import (
     ingest_calls,
     ingest_chunks,
@@ -33,6 +33,7 @@ async def ingest_legal_document(
     - MLflow experiment logging
     - Prometheus metrics tracking
     """
+    run = None
     try:
         logger.info(f"[PIPELINE] Starting ingestion for document '{document_id}'")
         ingest_calls.inc()
@@ -95,26 +96,37 @@ async def ingest_legal_document(
 
         # ✅ 7. MLflow Experiment Logging
         try:
-            run = mlflow_service.start_run(
+            run = start_run(
                 experiment_name=settings.EXPERIMENT_NAME,
                 run_name=document_id,
             )
-            mlflow_service.log_model_metadata(
-                model_name=settings.EMBEDDING_MODEL,
-                embedding_dim=settings.EMBEDDING_DIM,
-                chunk_size=settings.CHUNK_SIZE,
-                overlap=settings.CHUNK_OVERLAP,
-            )
-            mlflow_service.log_metrics({
-                "total_chunks": len(chunks),
-                "chunk_time": chunk_time,
-                "embedding_time": embedding_time,
-                "storage_time": storage_time,
-            })
-            mlflow.end_run()
-            logger.info(f"[MLFLOW] ✅ Logged run for document '{document_id}'.")
+            
+            if run:
+                # Log model metadata as parameters
+                log_params({
+                    "model_name": settings.EMBEDDING_MODEL,
+                    "embedding_dim": settings.EMBEDDING_DIM,
+                    "chunk_size": settings.CHUNK_SIZE,
+                    "overlap": settings.CHUNK_OVERLAP,
+                    "chunking_strategy": strategy_used,
+                    "pipeline_version": settings.API_VERSION
+                })
+                
+                # Log metrics
+                log_metrics({
+                    "total_chunks": len(chunks),
+                    "chunk_time": chunk_time,
+                    "embedding_time": embedding_time,
+                    "storage_time": storage_time,
+                })
+                
+                logger.info(f"[MLFLOW] ✅ Logged run for document '{document_id}'.")
+            
         except Exception as e:
             logger.warning(f"[MLFLOW] ⚠️ Logging failed: {e}")
+        finally:
+            if run:
+                end_run()
 
         # ✅ 8. Return structured response
         return {
@@ -126,4 +138,7 @@ async def ingest_legal_document(
 
     except Exception as e:
         logger.error(f"[PIPELINE] ❌ Ingestion failed for '{document_id}': {e}")
+        # Ensure MLflow run is properly closed even on error
+        if run:
+            end_run()
         raise

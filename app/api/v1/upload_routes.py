@@ -11,7 +11,8 @@ from app.services.chunking import SemanticLegalChunker, DEFAULT_MODEL
 from app.services.vector_store import VectorStoreService
 from app.core.config import settings
 
-router = APIRouter()
+router = APIRouter(prefix="", tags=["Upload"])
+
 logger = logging.getLogger(__name__)
 
 @router.post("/upload-pdf")
@@ -25,7 +26,7 @@ async def upload_pdf(
     Memory optimized for large documents.
     """
     try:
-        if not file.filename.endswith('.pdf'):
+        if not file.filename.endswith(('.pdf', '.PDF')):
             raise HTTPException(status_code=400, detail="Only PDF files are accepted")
 
         logger.info(f"[UPLOAD] 📄 Received PDF: {file.filename}")
@@ -41,7 +42,7 @@ async def upload_pdf(
         use_gpu = os.getenv("EASYOCR_USE_GPU", "false").lower() == "true"
         logger.info(f"[UPLOAD] 🚀 Starting OCR with GPU={use_gpu}")
         
-        extracted_text = OCRService.extract_text_from_pdf(pdf_bytes, use_gpu=use_gpu)
+        extracted_text = OCRService.extract_text_from_pdf(pdf_bytes)
         
         if not extracted_text or len(extracted_text.strip()) == 0:
             raise HTTPException(status_code=400, detail="No text could be extracted from the PDF")
@@ -56,7 +57,7 @@ async def upload_pdf(
         logger.info(f"[UPLOAD] 🔄 Starting chunking with model: {embedding_model}")
         
         chunker = SemanticLegalChunker(
-            min_chunk_size=settings.MIN_CHUNK_SIZE,
+            min_chunk_size=settings.CHUNK_SIZE,
             max_chunk_size=settings.MAX_CHUNK_SIZE,
             chunk_overlap=settings.CHUNK_OVERLAP,
             embedding_model=embedding_model,
@@ -77,7 +78,7 @@ async def upload_pdf(
         # ✅ Store in Qdrant vector store
         logger.info("[UPLOAD] 📊 Storing chunks in Qdrant...")
         vector_store = VectorStoreService(embedding_model=embedding_model)
-        vector_store.ingest_chunks(chunks)
+        await vector_store.ingest_chunks(chunks)
 
         logger.info(f"[UPLOAD] ✅ Successfully ingested {len(chunks)} chunks into Qdrant")
 
