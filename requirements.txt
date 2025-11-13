@@ -21,14 +21,10 @@ langsmith==0.1.17
 qdrant-client==1.7.0
 sentence-transformers==2.3.1
 
-# --- PDF / OCR utilities ---
-pdf2image==1.17.0
-pytesseract==0.3.10
-Pillow==10.2.0
-# Experiment tracking & metrics
+# --- PDF / text extraction ---
+pymupdf==1.22.3                   # ✅ Installs as 'fitz' module
+pymupdf-fonts==1.0.5              # ✅ Optional: font support for PyMuPDF
+
+# --- Experiment tracking & metrics ---
 mlflow==2.14.3
 prometheus-client==0.16.0
-
-
-
-

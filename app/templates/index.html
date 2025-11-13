@@ -68,6 +68,15 @@
       font-size: 12px;
       margin-right: 6px;
     }
+    .model-tag {
+      display: inline-block;
+      background: #107c10;
+      color: white;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 12px;
+      margin-right: 6px;
+    }
     .metadata {
       background: #272822;
       color: #f8f8f2;
@@ -97,6 +106,12 @@
   <!-- Upload PDF Section -->
   <section>
     <h2>📄 Upload Legal PDF</h2>
+    <label for="modelSelect">🤖 Select Chunking Model:</label>
+    <select id="modelSelect">
+      <option value="all-MiniLM-L6-v2">all-MiniLM-L6-v2 (Fast, lightweight)</option>
+      <option value="all-mpnet-base-v2">all-mpnet-base-v2 (High quality)</option>
+    </select>
+
     <input type="file" id="pdfFile" accept=".pdf" />
     <button onclick="uploadPDF()">Upload & Process</button>
     <p id="uploadStatus"></p>
@@ -125,6 +140,8 @@
     async function uploadPDF() {
       const fileInput = document.getElementById("pdfFile");
       const status = document.getElementById("uploadStatus");
+      const modelSelect = document.getElementById("modelSelect");
+      const selectedModel = modelSelect.value;
 
       if (!fileInput.files.length) {
         alert("Please select a PDF file first!");
@@ -133,13 +150,14 @@
 
       const formData = new FormData();
       formData.append("file", fileInput.files[0]);
-      status.textContent = "Uploading and processing... ⏳";
+      formData.append("embedding_model", selectedModel);
+      status.textContent = "Uploading and processing with model: " + selectedModel + " ⏳";
 
       try {
         const res = await fetch("/upload-pdf", { method: "POST", body: formData });
         const data = await res.json();
         if (res.ok) {
-          status.textContent = "✅ " + data.message;
+          status.textContent = "✅ " + data.message + " (Model: " + selectedModel + ")";
         } else {
           status.textContent = "❌ Error: " + (data.detail || "Upload failed");
         }
@@ -177,6 +195,7 @@
                 <div class="meta-line"><em>Citation:</em> ${r.citation_id || "N/A"}</div>
                 <div class="meta-line">
                   <span class="tag">${meta.type || "Unknown"}</span>
+                  ${meta.chunking_model ? `<span class="model-tag">🤖 ${meta.chunking_model}</span>` : ""}
                   Confidence: ${(meta.confidence ?? 0).toFixed(2)} |
                   Sentences: ${meta.sentence_count ?? "?"} |
                   Chars: ${meta.char_count ?? "?"}

@@ -1,5 +1,4 @@
-version: "3.9"
-
+version: "3.8"
 services:
   # =======================
   # 🧠 QDRANT VECTOR DB
@@ -13,14 +12,14 @@ services:
       - qdrant_data:/qdrant/storage
     restart: always
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:6333/ready"]
-      interval: 20s        # Wait 20 seconds between checks
-      timeout: 10s         # Allow up to 10 seconds for a response
-      retries: 15          # Retry up to 15 times (5 minutes total)
-      start_period: 60s    # Give Qdrant 60 seconds to start before first check
+      test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
 
   # =======================
-  # 📊 MLFLOW TRACKING SERVER (using openEuler image)
+  # 📊 MLFLOW TRACKING SERVER
   # =======================
   mlflow:
     image: openeuler/mlflow:latest
@@ -45,35 +44,45 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:5000"]
       interval: 15s
       timeout: 10s
-      retries: 5
+      retries: 15
+      start_period: 30s
 
   # =======================
   # ⚖️ FASTAPI LEGAL API
   # =======================
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: legal_api
-    depends_on:
-      qdrant:
-        condition: service_healthy
-      mlflow:
-        condition: service_started
     environment:
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
       - COLLECTION_NAME=legal_precedents
       - MLFLOW_TRACKING_URI=http://mlflow:5000
       - REGISTERED_MODEL_NAME=legal-embed-model
+      - PYTHONPATH=/
+      - HF_HOME=/app/models
+      - PYTHONUNBUFFERED=1
     ports:
       - "8000:8000"
     volumes:
-      - ./app:/app/app
+      - ./app:/app:cached
+      - huggingface_models:/app/models
     restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 15s
-      timeout: 10s
-      retries: 5
+    command: >
+      sh -c "
+      echo '⏳ Waiting for dependencies...' &&
+      until curl -fsS http://qdrant:6333/readyz; do
+        echo '⏳ Waiting for Qdrant...';
+        sleep 2;
+      done;
+      until curl -fsS http://mlflow:5000; do
+        echo '⏳ Waiting for MLflow...';
+        sleep 2;
+      done;
+      echo '✅ Dependencies ready. Starting FastAPI...' &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1"
 
 # =======================
 # 🗄️ NAMED VOLUMES
@@ -82,3 +91,4 @@ volumes:
   qdrant_data:
   mlflow_artifacts:
   mlflow_db:
+  huggingface_models:

@@ -1,9 +1,12 @@
 import asyncio
+import os
 import logging
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from app.config.model_config import log_model_config
+from app.services.ocr import OCRService
 
 # ============================================================
 # Local imports
@@ -54,8 +57,13 @@ app.add_middleware(
 # ============================================================
 # Frontend Setup (Templates + Static)
 # ============================================================
-templates = Jinja2Templates(directory="app/templates")
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory="templates")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app.mount(
+    "/static",
+    StaticFiles(directory=os.path.join(BASE_DIR, "static")),
+    name="static"
+)
 
 
 @app.get("/", include_in_schema=False)
@@ -93,22 +101,17 @@ app.include_router(health_routes.router)
 @app.on_event("startup")
 async def startup_event():
     """
-    Runs when the API starts up.
-    Verifies Qdrant connection and ensures the vector collection exists.
+    Initialize models and log configuration on startup.
     """
-    try:
-        logger.info("[INIT] Checking Qdrant connection...")
-        vector_store = VectorStoreService(
-            host=settings.QDRANT_HOST,
-            port=settings.QDRANT_PORT,
-            collection_name=settings.COLLECTION_NAME,
-        )
+    logger.info("🚀 Starting Legal Semantic Pipeline...")
 
-        # Create collection asynchronously (non-blocking)
-        await asyncio.to_thread(vector_store.create_collection)
-        logger.info(f"[INIT] ✅ Qdrant collection '{settings.COLLECTION_NAME}' is ready.")
-    except Exception as e:
-        logger.error(f"[INIT] ❌ Failed to initialize Qdrant collection: {e}")
+    # Log model configuration (HF cached models etc.)
+    log_model_config()
+
+    # No EasyOCR pre-load: using PyMuPDF for fast text extraction (no OCR)
+    logger.info("[STARTUP] ℹ️ Using PyMuPDF for PDF text extraction (no EasyOCR/Tesseract).")
+
+    logger.info("✅ Legal Semantic Pipeline started!")
 
 
 # ============================================================

@@ -1,6 +1,7 @@
 import re
 import time
 import logging
+import os
 from typing import List, Dict
 from collections import Counter
 from dataclasses import dataclass
@@ -15,6 +16,25 @@ from app.services import mlflow_service
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+# ============================================================
+# 🎯 Available Chunking Models
+# ============================================================
+
+AVAILABLE_MODELS = {
+    "all-MiniLM-L6-v2": {
+        "name": "all-MiniLM-L6-v2",
+        "description": "Fast, lightweight (384 dims)",
+        "dimensions": 384,
+    },
+    "all-mpnet-base-v2": {
+        "name": "all-mpnet-base-v2",
+        "description": "High quality (768 dims)",
+        "dimensions": 768,
+    },
+}
+
+DEFAULT_MODEL = "all-MiniLM-L6-v2"
 
 
 # ============================================================
@@ -62,39 +82,47 @@ class LegalChunkClassifier:
 
 
 # ============================================================
-# 🧠 Semantic Legal Chunker (optimized with window + size control)
+# 🧠 Semantic Legal Chunker (multi-model support)
 # ============================================================
 
 class SemanticLegalChunker:
     """
-    Uses LangChain’s SemanticChunker with size bounding and sliding window context.
+    Uses LangChain's SemanticChunker with size bounding and sliding window context.
+    Supports multiple sentence-transformer models.
     """
 
     def __init__(
         self,
-        min_chunk_size: int = 800,       # avoid small fragments
-        max_chunk_size: int = 1800,      # prevent too-long reasoning blocks
-        chunk_overlap: int = 250,        # sliding window to preserve continuity
-        embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
+        min_chunk_size,
+        max_chunk_size,
+        chunk_overlap,
+        embedding_model: str = DEFAULT_MODEL,
     ):
         """
         Args:
             min_chunk_size: Minimum character count per chunk.
             max_chunk_size: Maximum character count per chunk.
             chunk_overlap: Overlap between adjacent chunks for contextual flow.
-            embedding_model: Semantic embedding model name.
+            embedding_model: Model name from AVAILABLE_MODELS.
         """
+        if embedding_model not in AVAILABLE_MODELS:
+            logger.warning(f"[INIT] Model {embedding_model} not available. Using {DEFAULT_MODEL}")
+            embedding_model = DEFAULT_MODEL
+
         self.min_chunk_size = min_chunk_size
         self.max_chunk_size = max_chunk_size
         self.chunk_overlap = chunk_overlap
+        self.model_name = embedding_model
+        self.model_config = AVAILABLE_MODELS[embedding_model]
 
-        # ✅ LangChain-compatible embedding model
+        # ✅ Use local cached models via HF_HOME environment variable
         self.embedder = HuggingFaceEmbeddings(model_name=embedding_model)
         self.classifier = LegalChunkClassifier()
 
         logger.info(
             f"[INIT] SemanticLegalChunker(semantic_split, "
-            f"min={min_chunk_size}, max={max_chunk_size}, overlap={chunk_overlap}, model={embedding_model})"
+            f"min={min_chunk_size}, max={max_chunk_size}, overlap={chunk_overlap}, "
+            f"model={embedding_model} ({self.model_config['description']}))"
         )
 
     # --------------------------------------------------------
@@ -102,7 +130,7 @@ class SemanticLegalChunker:
         """Perform size-controlled semantic splitting."""
         splitter = SemanticChunker(self.embedder)
 
-        # LangChain’s semantic splitter doesn’t directly expose size limits,
+        # LangChain's semantic splitter doesn't directly expose size limits,
         # so we manually re-merge chunks post-split.
         docs = splitter.create_documents([text])
         raw_chunks = [d.page_content.strip() for d in docs if d.page_content.strip()]
@@ -140,7 +168,7 @@ class SemanticLegalChunker:
             return []
 
         start_time = time.time()
-        logger.info("[CHUNKER] Starting semantic chunking...")
+        logger.info(f"[CHUNKER] Starting semantic chunking with model: {self.model_name}...")
         chunks = self._semantic_split(text)
         chunk_time = time.time() - start_time
         logger.info(f"[CHUNKER] ✅ Generated {len(chunks)} legal-aware chunks in {chunk_time:.2f}s")
@@ -169,7 +197,7 @@ class SemanticLegalChunker:
         avg_size = sum(c["char_count"] for c in classified_chunks) / len(classified_chunks)
         type_dist = Counter(c["type"] for c in classified_chunks)
 
-        # ✅ Update metrics + log to MLflow
+        # ✅ Update metrics + log to MLflow with model info
         ingest_chunks.inc(len(classified_chunks))
         embedding_time_hist.observe(chunk_time)
 
@@ -180,11 +208,19 @@ class SemanticLegalChunker:
                 "chunk_time": chunk_time,
                 "avg_chunk_size": avg_size,
             })
+            # ✅ Log which model was used
+            mlflow_service.log_params({
+                "chunking_model": self.model_name,
+                "model_dimensions": self.model_config["dimensions"],
+                "min_chunk_size": self.min_chunk_size,
+                "max_chunk_size": self.max_chunk_size,
+                "chunk_overlap": self.chunk_overlap,
+            })
             for t, v in type_dist.items():
                 mlflow_service.log_metrics({f"type_{t}_count": v})
             mlflow_service.log_model_metadata(
-                model_name=self.embedder.model_name,
-                embedding_dim=384,
+                model_name=self.model_name,
+                embedding_dim=self.model_config["dimensions"],
                 chunk_size=self.min_chunk_size,
                 overlap=self.chunk_overlap,
             )
@@ -194,27 +230,33 @@ class SemanticLegalChunker:
 
         logger.info(
             f"[CHUNKER] ✅ Finalized {len(classified_chunks)} chunks "
-            f"(avg size {avg_size:.0f} chars) | Type dist: {dict(type_dist)}"
+            f"(avg size {avg_size:.0f} chars) | Type dist: {dict(type_dist)} | Model: {self.model_name}"
         )
 
         return classified_chunks
 
 
 # ============================================================
-# 🧩 Recursive Chunker (baseline comparison)
+# 🧩 Recursive Chunker (multi-model support)
 # ============================================================
 
 class RecursiveChunker:
     """
-    Simple paragraph/sentence-based recursive chunker to compare against semantic chunking.
+    Simple paragraph/sentence-based recursive chunker with multi-model support.
     """
 
-    def __init__(self, min_chunk_size=500, max_chunk_size=1200, chunk_overlap=100, embedding_model=None):
+    def __init__(self, min_chunk_size, max_chunk_size, chunk_overlap, embedding_model: str = DEFAULT_MODEL):
+        if embedding_model not in AVAILABLE_MODELS:
+            embedding_model = DEFAULT_MODEL
+
         self.min_chunk_size = min_chunk_size
         self.max_chunk_size = max_chunk_size
         self.chunk_overlap = chunk_overlap
+        self.model_name = embedding_model
+        self.model_config = AVAILABLE_MODELS[embedding_model]
         self.classifier = LegalChunkClassifier()
 
+    # --------------------------------------------------------
     def _recursive_split(self, text: str) -> List[str]:
         """Recursively split text by paragraphs or sentences within size bounds."""
         if len(text) <= self.max_chunk_size:
@@ -247,7 +289,7 @@ class RecursiveChunker:
         start_time = time.time()
         chunks = self._recursive_split(text)
         chunk_time = time.time() - start_time
-        logger.info(f"[CHUNKER-RECURSIVE] Generated {len(chunks)} chunks in {chunk_time:.2f}s")
+        logger.info(f"[CHUNKER-RECURSIVE] Generated {len(chunks)} chunks in {chunk_time:.2f}s with model: {self.model_name}")
 
         final_chunks = []
         for i, chunk in enumerate(chunks):
@@ -272,7 +314,7 @@ class RecursiveChunker:
         avg_size = sum(c["char_count"] for c in final_chunks) / len(final_chunks)
         type_dist = Counter(c["type"] for c in final_chunks)
 
-        # ✅ Metrics + MLflow
+        # ✅ Metrics + MLflow with model info
         ingest_chunks.inc(len(final_chunks))
         embedding_time_hist.observe(chunk_time)
         try:
@@ -282,6 +324,11 @@ class RecursiveChunker:
                 "chunk_time": chunk_time,
                 "avg_chunk_size": avg_size,
             })
+            mlflow_service.log_params({
+                "chunking_model": self.model_name,
+                "model_dimensions": self.model_config["dimensions"],
+                "chunking_strategy": "recursive",
+            })
             for t, v in type_dist.items():
                 mlflow_service.log_metrics({f"type_{t}_count": v})
             mlflow_service.mlflow.end_run()
@@ -290,6 +337,6 @@ class RecursiveChunker:
 
         logger.info(
             f"[CHUNKER-RECURSIVE] ✅ {len(final_chunks)} chunks | avg size {avg_size:.0f} | "
-            f"dist: {dict(type_dist)}"
+            f"dist: {dict(type_dist)} | Model: {self.model_name}"
         )
         return final_chunks

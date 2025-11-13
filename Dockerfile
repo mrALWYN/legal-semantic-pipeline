@@ -1,41 +1,52 @@
 # ============================================================
-# Base Image
+# ⚖️ Legal Semantic Pipeline — Backend API Dockerfile
 # ============================================================
 FROM python:3.11-slim
 
-# Set working directory
-WORKDIR /app
+WORKDIR /
 
-# ============================================================
-# System Dependencies (for OCR + PDF + Fonts)
-# ============================================================
+# --- System dependencies (PDF, image libs) ---
 RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
     poppler-utils \
     libgl1 \
     libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# ============================================================
-# Upgrade pip and install Python dependencies
-# ============================================================
+# --- Upgrade pip ---
 RUN pip install --upgrade pip setuptools wheel
 
-# Pre-install heavy libraries first to leverage Docker layer caching
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-RUN pip install sentence-transformers==2.3.1
+# --- Copy ONLY requirements.txt first (separate layer for caching) ---
+COPY requirements.txt /requirements.txt
 
-# Copy requirements and install
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# --- Install Python dependencies (cached if requirements.txt unchanged) ---
+RUN pip install --no-cache-dir -r /requirements.txt
 
-# ============================================================
-# Copy Application Code
-# ============================================================
-COPY ./app /app/app
+# --- Pre-download ML models (sentence-transformers) ---
+ENV HF_HOME=/app/models
+RUN mkdir -p /app/models && \
+    python - <<'EOF'
+from sentence_transformers import SentenceTransformer
+print("Downloading all-MiniLM-L6-v2...")
+SentenceTransformer('all-MiniLM-L6-v2')
+print("Downloading all-mpnet-base-v2...")
+SentenceTransformer('all-mpnet-base-v2')
+print("✅ Sentence-transformer models downloaded")
+EOF
 
-# ============================================================
-# Expose API Port & Set Entrypoint
-# ============================================================
+# --- Copy Application Source (last layer - rebuilds app code without pip) ---
+COPY ./app /app
+
+# --- Environment ---
+ENV PYTHONPATH=/
+ENV HF_HOME=/app/models
+
+# --- Permissions ---
+RUN chmod -R 755 /app/models || true
+
+# --- Run Server ---
 EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

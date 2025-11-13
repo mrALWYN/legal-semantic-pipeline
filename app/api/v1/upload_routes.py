@@ -1,102 +1,99 @@
 import os
 import io
-import pytesseract
 import logging
 import asyncio
+import gc
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form
+from fastapi.responses import JSONResponse
 from pdf2image import convert_from_bytes
-from app.core.pipeline import ingest_legal_document
+from app.services.ocr import OCRService
+from app.services.chunking import SemanticLegalChunker, DEFAULT_MODEL
+from app.services.vector_store import VectorStoreService
+from app.core.config import settings
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-
 @router.post("/upload-pdf")
 async def upload_pdf(
     file: UploadFile = File(...),
-    citation_id: str = Form(None)
+    embedding_model: str = Form(DEFAULT_MODEL),
 ):
     """
-    Upload a PDF → extract text via OCR → run semantic chunking pipeline → store in Qdrant.
+    Upload and process a legal PDF.
+    Uses pre-cached EasyOCR models for fast OCR processing.
+    Memory optimized for large documents.
     """
     try:
-        # ===============================
-        # 1️⃣ Validate file type
-        # ===============================
-        if not file.filename.lower().endswith(".pdf"):
-            raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+        if not file.filename.endswith('.pdf'):
+            raise HTTPException(status_code=400, detail="Only PDF files are accepted")
 
         logger.info(f"[UPLOAD] 📄 Received PDF: {file.filename}")
 
-        # ===============================
-        # 2️⃣ Read file bytes
-        # ===============================
+        # Read PDF bytes
         pdf_bytes = await file.read()
         if not pdf_bytes:
-            raise HTTPException(status_code=400, detail="Empty file uploaded")
+            raise HTTPException(status_code=400, detail="PDF file is empty")
 
-        # ===============================
-        # 3️⃣ Convert PDF pages → Images
-        # ===============================
-        try:
-            images = await asyncio.to_thread(convert_from_bytes, pdf_bytes)
-        except Exception as e:
-            logger.error(f"[OCR] ❌ Failed to convert PDF: {e}")
-            raise HTTPException(status_code=500, detail=f"PDF conversion failed: {e}")
+        logger.info(f"[UPLOAD] 📥 PDF received successfully ({len(pdf_bytes) / (1024*1024):.2f} MB)")
 
-        if not images:
-            raise HTTPException(status_code=400, detail="No readable pages found in the PDF")
-
-        logger.info(f"[OCR] 🖼️ Converted {len(images)} pages from PDF")
-
-        # ===============================
-        # 4️⃣ Perform OCR on each page
-        # ===============================
-        text_chunks = []
-        for i, page in enumerate(images, start=1):
-            ocr_text = await asyncio.to_thread(pytesseract.image_to_string, page)
-            ocr_text = ocr_text.strip()
-            if ocr_text:
-                text_chunks.append(ocr_text)
-                logger.info(f"[OCR] ✅ Page {i}: {len(ocr_text)} chars extracted")
-            else:
-                logger.warning(f"[OCR] ⚠️ Page {i} produced no readable text")
-
-        text = "\n".join(text_chunks).strip()
-        if not text:
+        # ✅ Use centralized OCRService with proper GPU settings
+        use_gpu = os.getenv("EASYOCR_USE_GPU", "false").lower() == "true"
+        logger.info(f"[UPLOAD] 🚀 Starting OCR with GPU={use_gpu}")
+        
+        extracted_text = OCRService.extract_text_from_pdf(pdf_bytes, use_gpu=use_gpu)
+        
+        if not extracted_text or len(extracted_text.strip()) == 0:
             raise HTTPException(status_code=400, detail="No text could be extracted from the PDF")
 
-        # ===============================
-        # 5️⃣ Ingest extracted text
-        # ===============================
-        document_id = citation_id or os.path.splitext(file.filename)[0]
+        logger.info(f"[UPLOAD] ✅ OCR completed. Extracted {len(extracted_text)} characters")
 
-        result = await ingest_legal_document(
-            text=text,
-            chunking_strategy="semantic-legal",
-            document_id=document_id,
+        # ✅ Cleanup
+        del pdf_bytes
+        gc.collect()
+
+        # ✅ Perform chunking with selected model
+        logger.info(f"[UPLOAD] 🔄 Starting chunking with model: {embedding_model}")
+        
+        chunker = SemanticLegalChunker(
+            min_chunk_size=settings.MIN_CHUNK_SIZE,
+            max_chunk_size=settings.MAX_CHUNK_SIZE,
+            chunk_overlap=settings.CHUNK_OVERLAP,
+            embedding_model=embedding_model,
         )
 
-        logger.info(
-            f"[UPLOAD] ✅ Ingestion complete for '{document_id}' → "
-            f"{result['total_chunks']} semantic chunks stored."
-        )
+        document_id = file.filename.replace(".pdf", "").replace(" ", "_")
+        chunks = chunker.chunk_document(extracted_text, document_id)
 
-        # ===============================
-        # ✅ Structured response
-        # ===============================
-        return {
-            "filename": file.filename,
-            "citation_id": document_id,
-            "pages": len(images),
-            "total_chunks": result["total_chunks"],
+        if not chunks:
+            raise HTTPException(status_code=400, detail="No chunks could be created from the PDF")
+
+        logger.info(f"[UPLOAD] ✅ Created {len(chunks)} chunks")
+
+        # ✅ Cleanup
+        del extracted_text
+        gc.collect()
+
+        # ✅ Store in Qdrant vector store
+        logger.info("[UPLOAD] 📊 Storing chunks in Qdrant...")
+        vector_store = VectorStoreService(embedding_model=embedding_model)
+        vector_store.ingest_chunks(chunks)
+
+        logger.info(f"[UPLOAD] ✅ Successfully ingested {len(chunks)} chunks into Qdrant")
+
+        return JSONResponse({
             "status": "success",
-            "message": "✅ PDF uploaded, OCR completed, and document ingested successfully!"
-        }
+            "message": f"PDF processed successfully. {len(chunks)} chunks created and indexed.",
+            "document_id": document_id,
+            "chunks_count": len(chunks),
+            "embedding_model": embedding_model,
+            "text_length": len(extracted_text) if 'extracted_text' in locals() else 0,
+        }, status_code=200)
 
     except HTTPException:
-        raise  # Forward HTTP errors directly
-
+        raise
     except Exception as e:
-        logger.exception(f"[ERROR] Unexpected failure during upload: {e}")
-        raise HTTPException(status_code=500, detail=f"Unexpected server error: {e}")
+        logger.error(f"[ERROR] Unexpected failure during upload: {e}", exc_info=True)
+        # Cleanup on error
+        gc.collect()
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
