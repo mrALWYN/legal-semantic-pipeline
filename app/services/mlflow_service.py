@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Any
 
 import mlflow
 from mlflow.tracking import MlflowClient
-from mlflow.entities import RunStatus
+from mlflow.entities import ViewType
 
 from app.core.config import settings
 
@@ -37,7 +37,8 @@ def get_mlflow_client() -> MlflowClient:
                 def search_runs(self, *args, **kwargs): return []
                 def get_latest_versions(self, *args, **kwargs): return []
                 def transition_model_version_stage(self, *args, **kwargs): pass
-                def list_experiments(self): return []
+                def search_experiments(self, view_type=None): return []
+                def list_registered_models(self): return []
             _mlflow_client = MockClient()
     return _mlflow_client
 
@@ -285,7 +286,8 @@ def list_experiments() -> List[Dict]:
     """
     try:
         client = get_mlflow_client()
-        experiments = client.list_experiments()
+        # Use search_experiments instead of list_experiments for better compatibility
+        experiments = client.search_experiments(view_type=ViewType.ALL)
         
         experiment_list = []
         for exp in experiments:
@@ -294,12 +296,29 @@ def list_experiments() -> List[Dict]:
                 "name": exp.name,
                 "artifact_location": exp.artifact_location,
                 "lifecycle_stage": exp.lifecycle_stage,
-                "tags": exp.tags
+                "tags": dict(exp.tags) if exp.tags else {}
             })
         
         logger.info(f"📂 Found {len(experiment_list)} experiments")
         return experiment_list
         
+    except AttributeError as e:
+        # Fallback for older MLflow versions
+        logger.warning(f"⚠️ list_experiments not available, trying alternative: {e}")
+        try:
+            client = get_mlflow_client()
+            # Try to get default experiment as fallback
+            default_exp = client.get_experiment("0")
+            return [{
+                "experiment_id": default_exp.experiment_id,
+                "name": default_exp.name,
+                "artifact_location": default_exp.artifact_location,
+                "lifecycle_stage": default_exp.lifecycle_stage,
+                "tags": dict(default_exp.tags) if default_exp.tags else {}
+            }]
+        except Exception as fallback_e:
+            logger.error(f"❌ Failed to list experiments (fallback also failed): {fallback_e}")
+            return []
     except Exception as e:
         logger.error(f"❌ Failed to list experiments: {e}")
         return []
@@ -415,7 +434,8 @@ def test_mlflow_connection() -> bool:
     """Test if MLflow server is accessible."""
     try:
         client = get_mlflow_client()
-        experiments = client.list_experiments()
+        # Use search_experiments for compatibility
+        experiments = client.search_experiments(view_type=ViewType.ACTIVE_ONLY)
         logger.info("✅ MLflow connection test successful")
         return True
     except Exception as e:
@@ -427,7 +447,7 @@ def get_mlflow_status() -> Dict[str, Any]:
     """Get comprehensive MLflow status information."""
     try:
         client = get_mlflow_client()
-        experiments = client.list_experiments()
+        experiments = client.search_experiments(view_type=ViewType.ALL)
         
         return {
             "status": "CONNECTED",

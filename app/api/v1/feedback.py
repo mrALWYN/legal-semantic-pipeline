@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
 from app.core.config import settings
-from app.services.metrics import feedback_counter
+from app.services.metrics import feedback_counter, feedback_ratings
 
 router = APIRouter(prefix="", tags=["Feedback"])
 logger = logging.getLogger(__name__)
@@ -27,7 +27,12 @@ async def submit_feedback(feedback: FeedbackEntry):
         with open(settings.FEEDBACK_STORE_PATH, "a+", encoding="utf-8") as fh:
             fh.write(json.dumps(entry) + "\n")
         feedback_counter.inc()
-        return {"status": "ok"}
+        
+        # Record feedback rating for monitoring
+        feedback_ratings.observe(feedback.relevance)
+        
+        logger.info(f"Feedback submitted for chunk {feedback.chunk_id} with relevance {feedback.relevance}")
+        return {"status": "ok", "message": "Feedback recorded successfully"}
     except Exception as e:
         logger.exception("Failed to store feedback")
         raise HTTPException(status_code=500, detail=str(e))

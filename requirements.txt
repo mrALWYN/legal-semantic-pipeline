@@ -37,6 +37,7 @@ Pillow==10.0.1
 # --- Experiment tracking & metrics ---
 mlflow==2.14.3
 prometheus-client==0.16.0
+psutil==5.9.5
 
 # --- Additional utilities ---
 requests==2.31.0

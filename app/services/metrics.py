@@ -52,14 +52,20 @@ storage_time_hist = Histogram(
 # ============================================================
 # 🧠 Resource Usage
 # ============================================================
-current_memory = Gauge(
+memory_usage_bytes = Gauge(
     "memory_usage_bytes",
     "Memory used during embedding (bytes)",
     registry=registry,
 )
 
+cpu_usage_percent = Gauge(
+    "cpu_usage_percent",
+    "Current CPU usage percentage",
+    registry=registry,
+)
+
 # ============================================================
-# 🔍 Search / Query Metrics (added for point #11)
+# 🔍 Search / Query Metrics
 # ============================================================
 search_requests = Counter(
     "search_requests_total",
@@ -76,6 +82,72 @@ search_duration_hist = Histogram(
 search_results = Counter(
     "search_results_total",
     "Total number of search results returned",
+    registry=registry,
+)
+
+# ============================================================
+# 🌐 API Request Metrics
+# ============================================================
+api_requests_total = Counter(
+    "api_requests_total",
+    "Total number of API requests",
+    ["method", "endpoint", "status_code"],
+    registry=registry,
+)
+
+api_request_duration_seconds = Histogram(
+    "api_request_duration_seconds",
+    "API request duration in seconds",
+    ["method", "endpoint"],
+    registry=registry,
+)
+
+# ============================================================
+# 🧠 Model Performance Metrics
+# ============================================================
+embedding_similarity = Histogram(
+    "embedding_similarity_score",
+    "Embedding similarity scores distribution",
+    registry=registry,
+)
+
+chunk_size_distribution = Histogram(
+    "chunk_size_chars",
+    "Distribution of chunk sizes in characters",
+    buckets=[100, 500, 1000, 2000, 5000, 10000],
+    registry=registry,
+)
+
+# ============================================================
+# ⚠️ Error & Anomaly Tracking
+# ============================================================
+anomalies_detected = Counter(
+    "anomalies_detected_total",
+    "Total anomalies detected in processing",
+    ["type"],
+    registry=registry,
+)
+
+processing_failures = Counter(
+    "processing_failures_total",
+    "Total processing failures",
+    ["stage"],
+    registry=registry,
+)
+
+# ============================================================
+# 📊 Retrieval Metrics
+# ============================================================
+retrieval_accuracy = Histogram(
+    "retrieval_accuracy_score",
+    "Retrieval accuracy scores",
+    registry=registry,
+)
+
+feedback_ratings = Histogram(
+    "feedback_rating",
+    "User feedback ratings distribution",
+    buckets=[0, 1, 2, 3, 4, 5],
     registry=registry,
 )
 

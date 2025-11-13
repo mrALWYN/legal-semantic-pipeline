@@ -1,0 +1,62 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Legal Pipeline - Model Metrics",
+    "tags": ["legal", "model", "embedding"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 0,
+    "refresh": "25s",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "Embedding Time",
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "rate(embedding_time_seconds_sum[5m]) / rate(embedding_time_seconds_count[5m])",
+            "legendFormat": "Avg Embedding Time"
+          }
+        ],
+        "datasource": "Prometheus"
+      },
+      {
+        "type": "heatmap",
+        "title": "Embedding Similarity Distribution",
+        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "embedding_similarity_score_bucket",
+            "format": "heatmap",
+            "legendFormat": "{{le}}"
+          }
+        ],
+        "datasource": "Prometheus"
+      },
+      {
+        "type": "graph",
+        "title": "Chunk Size Distribution",
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "chunk_size_chars_bucket",
+            "legendFormat": "{{le}} chars"
+          }
+        ],
+        "datasource": "Prometheus"
+      },
+      {
+        "type": "graph",
+        "title": "Retrieval Accuracy",
+        "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "retrieval_accuracy_score_bucket",
+            "legendFormat": "Accuracy scores"
+          }
+        ],
+        "datasource": "Prometheus"
+      }
+    ]
+  }
+}

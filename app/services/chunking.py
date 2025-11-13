@@ -12,7 +12,13 @@ from langchain_experimental.text_splitter import SemanticChunker
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
 # Internal imports
-from app.services.metrics import ingest_chunks, embedding_time_hist
+from app.services.metrics import (
+    ingest_chunks, 
+    embedding_time_hist,
+    chunk_size_distribution,
+    anomalies_detected,
+    processing_failures
+)
 from app.services.mlflow_service import (
     start_run, log_model_metadata, log_metrics, log_params, end_run
 )
@@ -171,6 +177,7 @@ class SemanticLegalChunker:
         
         if not raw_chunks:
             logger.warning("[CHUNKER] ⚠️ No chunks produced from semantic splitter")
+            anomalies_detected.labels(type="no_chunks_produced").inc()
             return [text[:self.max_chunk_size]]
 
         # Merge small chunks to meet size requirements
@@ -190,6 +197,7 @@ class SemanticLegalChunker:
                     logger.debug(f"[CHUNKER]   ✅ Saved merged chunk {len(merged_chunks)} | size: {len(buffer)}")
                 else:
                     logger.debug(f"[CHUNKER]   ⚠️ Buffer too small ({len(buffer)}), discarding")
+                    anomalies_detected.labels(type="small_buffer_discarded").inc()
                 buffer = chunk
 
         if len(buffer) >= self.min_chunk_size:
@@ -217,17 +225,24 @@ class SemanticLegalChunker:
     # --------------------------------------------------------
     def chunk_document(self, text: str, document_id: str) -> List[Dict]:
         """Perform semantic chunking, classification, and metadata enrichment."""
+        start_time = time.time()
         logger.info(f"[CHUNKER] 🚀 Starting chunking for document: {document_id}")
         
         if not text or not isinstance(text, str):
             logger.warning("[CHUNKER] ❌ Empty or invalid text input.")
+            processing_failures.labels(stage="chunking_input_validation").inc()
             return []
 
         # Step 1: Perform semantic splitting
         logger.info(f"[CHUNKER] 📝 Step 1/3: Semantic splitting...")
-        start_time = time.time()
-        chunks = self._semantic_split(text)
-        chunk_time = time.time() - start_time
+        chunk_start_time = time.time()
+        try:
+            chunks = self._semantic_split(text)
+        except Exception as e:
+            logger.error(f"[CHUNKER] ❌ Semantic splitting failed: {e}")
+            processing_failures.labels(stage="semantic_splitting").inc()
+            return []
+        chunk_time = time.time() - chunk_start_time
         logger.info(f"[CHUNKER] ✅ Step 1 Complete | {len(chunks)} chunks in {chunk_time:.2f}s")
 
         if not chunks:
@@ -244,7 +259,12 @@ class SemanticLegalChunker:
                 continue
             
             logger.debug(f"[CHUNKER]   Classifying chunk {i+1}/{len(chunks)} | size: {len(chunk_text)}")
-            classification = self.classifier.classify_chunk(chunk_text)
+            try:
+                classification = self.classifier.classify_chunk(chunk_text)
+            except Exception as e:
+                logger.error(f"[CHUNKER] ❌ Classification failed for chunk {i+1}: {e}")
+                processing_failures.labels(stage="chunk_classification").inc()
+                continue
             
             chunk_data = {
                 "chunk_id": f"{document_id}_{i}",
@@ -269,6 +289,9 @@ class SemanticLegalChunker:
             }
             classified_chunks.append(chunk_data)
             
+            # Record chunk size for monitoring
+            chunk_size_distribution.observe(len(chunk_text))
+            
             # Progress update every 10 chunks
             if (i + 1) % 10 == 0:
                 logger.info(f"[CHUNKER]   ✅ Classified {i+1}/{len(chunks)} chunks")
@@ -278,12 +301,22 @@ class SemanticLegalChunker:
 
         if not classified_chunks:
             logger.warning("[CHUNKER] ❌ No valid chunks produced after filtering.")
+            anomalies_detected.labels(type="no_valid_chunks").inc()
             return []
 
         # Step 3: Calculate statistics and log metrics
         logger.info(f"[CHUNKER] 📝 Step 3/3: Calculating statistics and logging metrics...")
         avg_size = sum(c["char_count"] for c in classified_chunks) / len(classified_chunks)
         type_dist = Counter(c["type"] for c in classified_chunks)
+
+        # Data quality checks
+        if len(classified_chunks) < 1:
+            anomalies_detected.labels(type="low_chunk_count").inc()
+            
+        if avg_size < 100:
+            anomalies_detected.labels(type="small_chunks").inc()
+        elif avg_size > 8000:
+            anomalies_detected.labels(type="large_chunks").inc()
 
         # ✅ Update metrics + log to MLflow with model info
         ingest_chunks.inc(len(classified_chunks))
@@ -318,6 +351,7 @@ class SemanticLegalChunker:
                 
         except Exception as e:
             logger.warning(f"[CHUNKER] ⚠️ MLflow logging failed: {e}")
+            processing_failures.labels(stage="mlflow_logging").inc()
         finally:
             if run:
                 end_run()
@@ -413,20 +447,28 @@ class RecursiveChunker:
         return result
 
     def chunk_document(self, text: str, document_id: str) -> List[Dict]:
+        start_time = time.time()
         logger.info(f"[CHUNKER] 🚀 Starting recursive chunking for document: {document_id}")
         
         if not text or not isinstance(text, str):
             logger.warning("[CHUNKER-RECURSIVE] ❌ Empty or invalid text input")
+            processing_failures.labels(stage="chunking_input_validation").inc()
             return []
 
         # Step 1: Recursive splitting
         logger.info(f"[CHUNKER] 📝 Step 1/3: Recursive splitting...")
-        start_time = time.time()
-        chunks = self._recursive_split(text)
-        chunk_time = time.time() - start_time
+        chunk_start_time = time.time()
+        try:
+            chunks = self._recursive_split(text)
+        except Exception as e:
+            logger.error(f"[CHUNKER-RECURSIVE] ❌ Recursive splitting failed: {e}")
+            processing_failures.labels(stage="recursive_splitting").inc()
+            return []
+        chunk_time = time.time() - chunk_start_time
         
         if not chunks:
             logger.warning("[CHUNKER-RECURSIVE] ❌ No chunks produced")
+            anomalies_detected.labels(type="no_chunks_produced").inc()
             return []
         
         logger.info(f"[CHUNKER] ✅ Step 1 Complete | {len(chunks)} raw chunks in {chunk_time:.2f}s")
@@ -442,8 +484,14 @@ class RecursiveChunker:
                 tail = chunks[i - 1][-self.chunk_overlap:]
                 chunk_text = tail + "\n" + chunk
             
-            classification = self.classifier.classify_chunk(chunk_text)
-            final_chunks.append({
+            try:
+                classification = self.classifier.classify_chunk(chunk_text)
+            except Exception as e:
+                logger.error(f"[CHUNKER] ❌ Classification failed for chunk {i+1}: {e}")
+                processing_failures.labels(stage="chunk_classification").inc()
+                continue
+                
+            chunk_data = {
                 "chunk_id": f"{document_id}_{i}",
                 "document_id": document_id,
                 "text": chunk_text,
@@ -463,7 +511,11 @@ class RecursiveChunker:
                     "max_chunk_size": self.max_chunk_size,
                     "chunk_overlap": self.chunk_overlap,
                 }
-            })
+            }
+            final_chunks.append(chunk_data)
+            
+            # Record chunk size for monitoring
+            chunk_size_distribution.observe(len(chunk_text))
             
             # Progress update every 20 chunks
             if (i + 1) % 20 == 0:
@@ -476,6 +528,15 @@ class RecursiveChunker:
         logger.info(f"[CHUNKER] 📝 Step 3/3: Calculating statistics and logging metrics...")
         avg_size = sum(c["char_count"] for c in final_chunks) / len(final_chunks) if final_chunks else 0
         type_dist = Counter(c["type"] for c in final_chunks)
+
+        # Data quality checks
+        if len(final_chunks) < 1:
+            anomalies_detected.labels(type="low_chunk_count").inc()
+            
+        if avg_size < 100:
+            anomalies_detected.labels(type="small_chunks").inc()
+        elif avg_size > 8000:
+            anomalies_detected.labels(type="large_chunks").inc()
 
         # ✅ Metrics + MLflow with model info
         ingest_chunks.inc(len(final_chunks))
@@ -510,6 +571,7 @@ class RecursiveChunker:
                 
         except Exception as e:
             logger.warning(f"[CHUNKER] ⚠️ MLflow logging failed: {e}")
+            processing_failures.labels(stage="mlflow_logging").inc()
         finally:
             if run:
                 end_run()

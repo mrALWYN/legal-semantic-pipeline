@@ -1,6 +1,8 @@
 import logging
 import os
 import time
+import asyncio
+import psutil
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +19,14 @@ from app.api.v1.models import router as models_router
 from app.api.v1.feedback import router as feedback_router
 from app.api.v1.metrics_endpoint import router as metrics_router
 from app.api.v1.health_routes import router as health_router
+
+# Import metrics
+from app.services.metrics import (
+    api_requests_total, 
+    api_request_duration_seconds,
+    cpu_usage_percent,
+    memory_usage_bytes
+)
 
 # ============================================================
 # Logging Configuration
@@ -81,6 +91,66 @@ async def serve_frontend(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 # ============================================================
+# 📊 Metrics Middleware
+# ============================================================
+
+@app.middleware("http")
+async def metrics_middleware(request: Request, call_next):
+    """Middleware to track API request metrics"""
+    start_time = time.time()
+    
+    try:
+        response = await call_next(request)
+        process_time = time.time() - start_time
+        
+        # Record metrics
+        api_requests_total.labels(
+            method=request.method,
+            endpoint=request.url.path,
+            status_code=response.status_code
+        ).inc()
+        
+        api_request_duration_seconds.labels(
+            method=request.method,
+            endpoint=request.url.path
+        ).observe(process_time)
+        
+        return response
+    except Exception as e:
+        # Record failed requests
+        api_requests_total.labels(
+            method=request.method,
+            endpoint=request.url.path,
+            status_code=500
+        ).inc()
+        
+        raise e
+
+# ============================================================
+# 🖥️ System Metrics Collection
+# ============================================================
+
+async def collect_system_metrics():
+    """Collect system resource metrics periodically"""
+    logger.info("Starting system metrics collection")
+    while True:
+        try:
+            # CPU usage
+            cpu_usage = psutil.cpu_percent(interval=1)
+            cpu_usage_percent.set(cpu_usage)
+            
+            # Memory usage
+            memory = psutil.virtual_memory()
+            memory_usage_bytes.set(memory.used)
+            
+            logger.debug(f"System metrics collected: CPU={cpu_usage}%, Memory={memory.used / (1024**2):.2f}MB")
+        except Exception as e:
+            logger.warning(f"Failed to collect system metrics: {e}")
+        
+        # Wait before next collection
+        await asyncio.sleep(30)  # Collect every 30 seconds
+
+# ============================================================
 # 🏥 Startup Event - Check Service Dependencies
 # ============================================================
 
@@ -127,7 +197,9 @@ async def startup_event():
                 time.sleep(retry_delay)
             else:
                 logger.warning("[STARTUP] ⚠️  MLflow unavailable, but API will start. Experiment tracking may fail.")
-
+    
+    # Start system metrics collection
+    asyncio.create_task(collect_system_metrics())
 
 # ============================================================
 # 🏥 Health Check
@@ -137,7 +209,6 @@ async def startup_event():
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "service": "legal-semantic-pipeline"}
-
 
 # ============================================================
 # 📄 Chunking Endpoint (Direct endpoint - not in router)
@@ -160,6 +231,7 @@ async def chunk_document(request: ChunkingRequest):
     **Returns:**
     - Structured chunks with metadata (type, citations, statutes, parties)
     """
+    start_time = time.time()
     try:
         logger.info(
             f"[API] Chunking request | technique={request.chunking_technique} | "
@@ -172,12 +244,16 @@ async def chunk_document(request: ChunkingRequest):
         if not chunks:
             raise ValueError("No chunks produced from document")
         
+        process_time = time.time() - start_time
+        logger.info(f"[API] Chunking completed in {process_time:.2f}s with {len(chunks)} chunks")
+        
         return JSONResponse({
             "status": "success",
             "document_id": request.document_id,
             "chunking_technique": request.chunking_technique,
             "embedding_model": request.embedding_model,
             "chunk_count": len(chunks),
+            "processing_time": round(process_time, 2),
             "parameters": {
                 "min_chunk_size": request.min_chunk_size,
                 "max_chunk_size": request.max_chunk_size,
@@ -192,7 +268,6 @@ async def chunk_document(request: ChunkingRequest):
         logger.error(f"[API] Chunking failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Chunking failed: {str(e)}")
 
-
 # ============================================================
 # 📊 Status Endpoint (Direct endpoint - not in router)
 # ============================================================
@@ -200,11 +275,21 @@ async def chunk_document(request: ChunkingRequest):
 @app.get("/api/v1/status")
 async def status():
     """Service status and configuration"""
+    # Get system stats
+    cpu_percent = psutil.cpu_percent(interval=1)
+    memory = psutil.virtual_memory()
+    
     return {
         "service": "Legal Semantic Pipeline",
         "version": os.getenv("API_VERSION", "1.0.0"),
         "available_models": ["all-MiniLM-L6-v2", "all-mpnet-base-v2"],
         "chunking_techniques": ["semantic", "recursive"],
+        "system_stats": {
+            "cpu_usage_percent": cpu_percent,
+            "memory_usage_mb": round(memory.used / (1024**2), 2),
+            "memory_total_mb": round(memory.total / (1024**2), 2),
+            "memory_percent": memory.percent
+        },
         "environment": {
             "qdrant_host": os.getenv("QDRANT_HOST"),
             "mlflow_uri": os.getenv("MLFLOW_TRACKING_URI"),

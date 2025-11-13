@@ -16,7 +16,7 @@ from app.services.metrics import (
     ingest_chunks,
     embedding_time_hist,
     storage_time_hist,
-    current_memory,
+    memory_usage_bytes,  # ✅ Correct metric name
 )
 
 logger = logging.getLogger(__name__)

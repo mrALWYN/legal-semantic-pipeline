@@ -19,8 +19,12 @@ from app.core.config import settings
 from app.services.metrics import (
     embedding_time_hist,
     storage_time_hist,
-    current_memory,
+    memory_usage_bytes,  # Changed from current_memory to memory_usage_bytes
     ingest_chunks,
+    search_duration_hist,
+    search_results,
+    processing_failures,
+    embedding_similarity
 )
 
 logger = logging.getLogger(__name__)
@@ -59,6 +63,7 @@ class VectorStoreService:
                 logger.warning(f"[QDRANT] Attempt {attempt + 1}/{max_retries} failed: {e}")
                 if attempt == max_retries - 1:
                     logger.error(f"[QDRANT] ❌ Failed to initialize client after {max_retries} attempts")
+                    processing_failures.labels(stage="qdrant_init").inc()
                     raise
                 time.sleep(2)
 
@@ -69,6 +74,7 @@ class VectorStoreService:
             logger.info(f"[QDRANT] ✅ Embedding model '{self.model_name}' loaded with {self.embedding_dim} dimensions")
         except Exception as e:
             logger.error(f"[QDRANT] ❌ Failed to load embedding model: {e}")
+            processing_failures.labels(stage="model_load").inc()
             raise
             
         # Create model-specific collection name
@@ -125,6 +131,7 @@ class VectorStoreService:
                     time.sleep(1)
                 else:
                     logger.error(f"[QDRANT] ❌ Failed to create collection after {max_retries} attempts")
+                    processing_failures.labels(stage="collection_create").inc()
                     return False
 
     async def upsert_chunks(self, chunks: List[Dict], document_id: str) -> float:
@@ -163,6 +170,7 @@ class VectorStoreService:
                     # Verify vector dimension
                     if len(vector) != self.embedding_dim:
                         logger.error(f"[QDRANT] ❌ Vector dimension mismatch: expected {self.embedding_dim}, got {len(vector)}")
+                        processing_failures.labels(stage="vector_dimension").inc()
                         raise ValueError(f"Vector dimension mismatch: expected {self.embedding_dim}, got {len(vector)}")
                     
                     # Create point with proper structure
@@ -191,12 +199,19 @@ class VectorStoreService:
                     batch_points.append(point)
 
                 if batch_points:
+                    # Record storage start time
+                    start_storage = time.time()
+                    
                     # Upsert batch
                     upsert_result = self.client.upsert(
                         collection_name=self.collection_name,
                         points=batch_points,
                         wait=True
                     )
+                    
+                    # Record storage time
+                    storage_time = time.time() - start_storage
+                    storage_time_hist.observe(storage_time)
                     
                     total_points += len(batch_points)
                     logger.info(f"[QDRANT] ✅ Batch upserted {len(batch_points)} chunks")
@@ -208,7 +223,7 @@ class VectorStoreService:
             # Update metrics
             try:
                 embedding_time_hist.observe(embedding_time)
-                current_memory.set(peak)
+                memory_usage_bytes.set(peak)  # Changed from current_memory to memory_usage_bytes
                 ingest_chunks.inc(total_points)
             except Exception as metric_err:
                 logger.warning(f"[METRICS] Failed to record metrics: {metric_err}")
@@ -223,6 +238,7 @@ class VectorStoreService:
         except Exception as e:
             logger.error(f"[QDRANT] ❌ Upsert failed: {e}")
             tracemalloc.stop()
+            processing_failures.labels(stage="upsert").inc()
             raise
 
     async def ingest_chunks(self, chunks: List[Dict]) -> bool:
@@ -237,6 +253,7 @@ class VectorStoreService:
             collection_ok = await self.create_collection_safe()
             if not collection_ok:
                 logger.error("[QDRANT] ❌ Collection setup failed")
+                processing_failures.labels(stage="collection_setup").inc()
                 return False
             
             # Step 2: Upsert chunks
@@ -245,6 +262,7 @@ class VectorStoreService:
                 embedding_time = await self.upsert_chunks(chunks, document_id)
             except Exception as e:
                 logger.error(f"[QDRANT] ❌ Upsert failed: {e}")
+                processing_failures.labels(stage="upsert_chunks").inc()
                 return False
             
             # Step 3: Verify success
@@ -269,13 +287,17 @@ class VectorStoreService:
             
         except Exception as e:
             logger.error(f"[QDRANT] ❌ Failed to ingest chunks: {e}")
+            processing_failures.labels(stage="ingestion").inc()
             return False
 
     def search(self, query: str, top_k: int = 10, score_threshold: float = 0.3) -> List[Dict]:
-        """Safe search with error handling."""
+        """Safe search with error handling and metrics tracking."""
+        start_time = time.time()
         try:
             if not query or not query.strip():
                 logger.warning("[QDRANT] Empty query provided for search")
+                # Record search duration even for empty queries
+                search_duration_hist.observe(time.time() - start_time)
                 return []
 
             logger.info(f"[QDRANT] 🔍 Searching for '{query}' (top_k={top_k})")
@@ -286,7 +308,7 @@ class VectorStoreService:
             top_k = min(top_k, 50)  # Safety cap
 
             # Search with score threshold
-            search_results = self.client.search(
+            search_results_raw = self.client.search(
                 collection_name=self.collection_name,
                 query_vector=query_vec,
                 limit=top_k,
@@ -294,14 +316,21 @@ class VectorStoreService:
             )
 
             results = []
-            for hit in search_results:
+            scores = []
+            for hit in search_results_raw:
                 payload = hit.payload or {}
+                score = round(hit.score, 4)
+                scores.append(score)
+                
+                # Record similarity score for monitoring
+                embedding_similarity.observe(score)
+                
                 results.append({
                     "chunk_text": payload.get("text", ""),
                     "document_id": payload.get("document_id", ""),
                     "citation_id": payload.get("citation_id", ""),
                     "type": payload.get("type", "Unknown"),
-                    "score": round(hit.score, 4),
+                    "score": score,
                     "metadata": {
                         "chunk_id": payload.get("chunk_id"),
                         "confidence": payload.get("confidence"),
@@ -320,11 +349,19 @@ class VectorStoreService:
             # Sort by score (descending)
             results.sort(key=lambda x: x["score"], reverse=True)
             
-            logger.info(f"[QDRANT] ✅ Retrieved {len(results)} results for query '{query}'")
+            # Record search metrics
+            search_duration = time.time() - start_time
+            search_duration_hist.observe(search_duration)
+            search_results.inc(len(results))
+            
+            logger.info(f"[QDRANT] ✅ Retrieved {len(results)} results for query '{query}' in {search_duration:.2f}s")
             return results
 
         except Exception as e:
             logger.error(f"[QDRANT] ❌ Search failed: {e}")
+            processing_failures.labels(stage="search").inc()
+            # Record search duration even for failed requests
+            search_duration_hist.observe(time.time() - start_time)
             return []
 
     async def health_check(self) -> bool:
@@ -334,6 +371,7 @@ class VectorStoreService:
             return True
         except Exception as e:
             logger.error(f"[QDRANT] ❌ Health check failed: {e}")
+            processing_failures.labels(stage="health_check").inc()
             return False
 
     async def get_collection_info(self) -> Dict:
@@ -354,4 +392,5 @@ class VectorStoreService:
             }
         except Exception as e:
             logger.warning(f"[QDRANT] Failed to get collection info: {e}")
+            processing_failures.labels(stage="collection_info").inc()
             return {"error": str(e)}
