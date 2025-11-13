@@ -1,4 +1,5 @@
-version: "3.8"
+version: "3.9"
+
 services:
   # =======================
   # 🧠 QDRANT VECTOR DB
@@ -30,15 +31,8 @@ services:
       MLFLOW_ARTIFACT_ROOT: /mlflow/artifacts
       BACKEND_STORE_URI: sqlite:////mlflow/db/mlflow.db
     volumes:
-      - ./mlflow_artifacts:/mlflow/artifacts
-      - ./mlflow_db:/mlflow/db
-    command: >
-      mlflow server
-      --backend-store-uri sqlite:////mlflow/db/mlflow.db
-      --default-artifact-root /mlflow/artifacts
-      --host 0.0.0.0
-      --port 5000
-      --serve-artifacts
+      - mlflow_artifacts:/mlflow/artifacts
+      - mlflow_db:/mlflow/db
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000"]
@@ -48,28 +42,45 @@ services:
       start_period: 30s
 
   # =======================
-  # ⚖️ FASTAPI LEGAL API
+  # ⚖️ FASTAPI LEGAL API (GPU-ENABLED)
   # =======================
   api:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: legal_api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env  # ✅ Load environment variables from .env
     environment:
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
       - COLLECTION_NAME=legal_precedents
       - MLFLOW_TRACKING_URI=http://mlflow:5000
       - REGISTERED_MODEL_NAME=legal-embed-model
-      - PYTHONPATH=/
+      - PYTHONPATH=/app
       - HF_HOME=/app/models
       - PYTHONUNBUFFERED=1
-    ports:
-      - "8000:8000"
+      - CUDA_VISIBLE_DEVICES=0
     volumes:
       - ./app:/app:cached
       - huggingface_models:/app/models
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
     restart: always
+    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    
     command: >
       sh -c "
       echo '⏳ Waiting for dependencies...' &&
@@ -81,7 +92,7 @@ services:
         echo '⏳ Waiting for MLflow...';
         sleep 2;
       done;
-      echo '✅ Dependencies ready. Starting FastAPI...' &&
+      echo '✅ Dependencies ready. Starting FastAPI (GPU-enabled)...' &&
       uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1"
 
 # =======================

@@ -1,5 +1,5 @@
 # ==============================
-# ⚖️  Legal Semantic Pipeline
+# ⚖️ Legal Semantic Pipeline (GPU + PyMuPDF + pdf2image)
 # ==============================
 
 # --- FastAPI core ---
@@ -10,21 +10,30 @@ pydantic-settings==2.1.0
 python-multipart==0.0.6
 python-dotenv==1.0.0
 
-# --- LangChain ecosystem ---
+# --- LangChain stack ---
 langchain==0.1.13
 langchain-community==0.0.33
 langchain-text-splitters==0.0.2
-langchain-experimental==0.0.52    # ✅ Needed for SemanticChunker
+langchain-experimental==0.0.52
 langsmith==0.1.17
 
-# --- Vector DB & embeddings ---
+# --- Vector DB ---
 qdrant-client==1.7.0
+
+# --- Embeddings / Transformers (GPU-optimized via PyTorch base) ---
 sentence-transformers==2.3.1
+transformers==4.40.2
+huggingface-hub==0.23.0
+tokenizers>=0.19,<0.20  # ✅ Fixed: compatible with transformers==4.40.2
 
-# --- PDF / text extraction ---
-pymupdf==1.22.3                   # ✅ Installs as 'fitz' module
-pymupdf-fonts==1.0.5              # ✅ Optional: font support for PyMuPDF
+# --- PDF parsing (both methods) ---
+PyMuPDF==1.24.10
+pdf2image==1.17.0
+Pillow==10.2.0
 
-# --- Experiment tracking & metrics ---
+# --- Experiment tracking ---
 mlflow==2.14.3
 prometheus-client==0.16.0
+
+# --- MLflow compatibility ---
+sqlalchemy==2.0.25

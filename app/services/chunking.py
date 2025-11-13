@@ -5,6 +5,7 @@ import os
 from typing import List, Dict
 from collections import Counter
 from dataclasses import dataclass
+import torch
 
 # ✅ Correct imports
 from langchain_experimental.text_splitter import SemanticChunker
@@ -87,7 +88,7 @@ class LegalChunkClassifier:
 
 class SemanticLegalChunker:
     """
-    Uses LangChain's SemanticChunker with size bounding and sliding window context.
+    Uses LangChain's SemanticChunker with GPU acceleration.
     Supports multiple sentence-transformer models.
     """
 
@@ -115,14 +116,20 @@ class SemanticLegalChunker:
         self.model_name = embedding_model
         self.model_config = AVAILABLE_MODELS[embedding_model]
 
-        # ✅ Use local cached models via HF_HOME environment variable
-        self.embedder = HuggingFaceEmbeddings(model_name=embedding_model)
+        # ✅ Use local cached models + GPU acceleration
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        logger.info(f"[INIT] Using device: {device}")
+        
+        self.embedder = HuggingFaceEmbeddings(
+            model_name=embedding_model,
+            model_kwargs={"device": device}
+        )
         self.classifier = LegalChunkClassifier()
 
         logger.info(
             f"[INIT] SemanticLegalChunker(semantic_split, "
             f"min={min_chunk_size}, max={max_chunk_size}, overlap={chunk_overlap}, "
-            f"model={embedding_model} ({self.model_config['description']}))"
+            f"model={embedding_model} ({self.model_config['description']}), device={device})"
         )
 
     # --------------------------------------------------------

@@ -1,6 +1,7 @@
 import asyncio
 import os
 import logging
+import torch
 from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -104,12 +105,18 @@ async def startup_event():
     Initialize models and log configuration on startup.
     """
     logger.info("🚀 Starting Legal Semantic Pipeline...")
+    
+    # Log GPU availability
+    if torch.cuda.is_available():
+        logger.info(f"[GPU] ✅ CUDA detected: {torch.cuda.get_device_name(0)}")
+        logger.info(f"[GPU] 📊 Total memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.2f} GB")
+    else:
+        logger.info("[GPU] ⚠️ No GPU detected. Running on CPU.")
 
     # Log model configuration (HF cached models etc.)
     log_model_config()
 
-    # No EasyOCR pre-load: using PyMuPDF for fast text extraction (no OCR)
-    logger.info("[STARTUP] ℹ️ Using PyMuPDF for PDF text extraction (no EasyOCR/Tesseract).")
+    logger.info("[STARTUP] ℹ️ Using PyMuPDF for primary PDF extraction + pdf2image fallback.")
 
     logger.info("✅ Legal Semantic Pipeline started!")
 
