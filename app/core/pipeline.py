@@ -25,7 +25,8 @@ logger = logging.getLogger(__name__)
 async def ingest_legal_document(
     text: str,
     chunking_strategy: str,
-    document_id: str
+    document_id: str,
+    embedding_model: str = None  # Add this parameter
 ):
     """
     Full semantic ingestion pipeline with:
@@ -35,27 +36,30 @@ async def ingest_legal_document(
     """
     run = None
     try:
-        logger.info(f"[PIPELINE] Starting ingestion for document '{document_id}'")
+        # Use provided model or fallback to settings default
+        model_to_use = embedding_model or settings.EMBEDDING_MODEL
+        logger.info(f"[PIPELINE] Starting ingestion for document '{document_id}' using model '{model_to_use}'")
         ingest_calls.inc()
 
-        # ✅ 1. Initialize Qdrant vector store
+        # ✅ 1. Initialize Qdrant vector store with the specific embedding model
         vector_store = VectorStoreService(
             host=settings.QDRANT_HOST,
             port=settings.QDRANT_PORT,
-            collection_name=settings.COLLECTION_NAME
+            collection_name=settings.COLLECTION_NAME,
+            embedding_model=model_to_use  # Pass the specific model
         )
 
         # ✅ 2. Ensure Qdrant collection exists
         await vector_store.create_collection()
         logger.info("[PIPELINE] Qdrant collection verified ✅")
 
-        # ✅ 3. Choose chunking strategy
+        # ✅ 3. Choose chunking strategy with the specific embedding model
         if chunking_strategy.lower().startswith("recursive"):
             chunker = RecursiveChunker(
                 min_chunk_size=settings.CHUNK_SIZE,
                 max_chunk_size=settings.MAX_CHUNK_SIZE,
                 chunk_overlap=settings.CHUNK_OVERLAP,
-                embedding_model=settings.EMBEDDING_MODEL,
+                embedding_model=model_to_use,  # Use the specific model
             )
             strategy_used = "recursive-legal"
         else:
@@ -63,7 +67,7 @@ async def ingest_legal_document(
                 min_chunk_size=settings.CHUNK_SIZE,
                 max_chunk_size=settings.MAX_CHUNK_SIZE,
                 chunk_overlap=settings.CHUNK_OVERLAP,
-                embedding_model=settings.EMBEDDING_MODEL,
+                embedding_model=model_to_use,  # Use the specific model
             )
             strategy_used = "semantic-legal"
 
@@ -81,6 +85,13 @@ async def ingest_legal_document(
         # ✅ 5. Add citation/document metadata
         for c in chunks:
             c["citation_id"] = document_id
+            # Extract model info from chunking metadata if available
+            if "chunking_metadata" in c and c["chunking_metadata"]:
+                model_used = c["chunking_metadata"].get("embedding_model", model_to_use)
+                model_dim = c["chunking_metadata"].get("model_dimensions", settings.EMBEDDING_DIM)
+            else:
+                model_used = model_to_use
+                model_dim = settings.EMBEDDING_DIM
 
         # ✅ 6. Embed + insert chunks into Qdrant
         logger.info(f"[PIPELINE] 🔄 Starting embedding & storage for {len(chunks)} chunks...")
@@ -102,10 +113,17 @@ async def ingest_legal_document(
             )
             
             if run:
+                # Get actual model info from chunks if available
+                actual_model = model_to_use
+                actual_dim = settings.EMBEDDING_DIM
+                if chunks and "chunking_metadata" in chunks[0]:
+                    actual_model = chunks[0]["chunking_metadata"].get("embedding_model", model_to_use)
+                    actual_dim = chunks[0]["chunking_metadata"].get("model_dimensions", settings.EMBEDDING_DIM)
+                
                 # Log model metadata as parameters
                 log_params({
-                    "model_name": settings.EMBEDDING_MODEL,
-                    "embedding_dim": settings.EMBEDDING_DIM,
+                    "model_name": actual_model,
+                    "embedding_dim": actual_dim,
                     "chunk_size": settings.CHUNK_SIZE,
                     "overlap": settings.CHUNK_OVERLAP,
                     "chunking_strategy": strategy_used,
@@ -133,7 +151,9 @@ async def ingest_legal_document(
             "job_id": str(uuid.uuid4()),
             "total_chunks": len(chunks),
             "status": "success",
-            "message": f"Document '{document_id}' processed successfully with strategy '{strategy_used}'.",
+            "message": f"Document '{document_id}' processed successfully with strategy '{strategy_used}' using model '{model_to_use}'.",
+            "embedding_model": model_to_use,
+            "chunking_strategy": strategy_used
         }
 
     except Exception as e:

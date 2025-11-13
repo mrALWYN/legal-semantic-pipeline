@@ -35,6 +35,16 @@ AVAILABLE_MODELS = {
         "description": "High quality (768 dims)",
         "dimensions": 768,
     },
+    "paraphrase-MiniLM-L12-v2": {
+        "name": "paraphrase-MiniLM-L12-v2",
+        "description": "Paraphrase model (384 dims)",
+        "dimensions": 384,
+    },
+    "multi-qa-MiniLM-L6-cos-v1": {
+        "name": "multi-qa-MiniLM-L6-cos-v1",
+        "description": "QA optimized (384 dims)",
+        "dimensions": 384,
+    },
 }
 
 DEFAULT_MODEL = "all-MiniLM-L6-v2"
@@ -108,29 +118,40 @@ class SemanticLegalChunker:
             chunk_overlap: Overlap between adjacent chunks for contextual flow.
             embedding_model: Model name from AVAILABLE_MODELS.
         """
-        if embedding_model not in AVAILABLE_MODELS:
-            logger.warning(f"[INIT] Model {embedding_model} not available. Using {DEFAULT_MODEL}")
-            embedding_model = DEFAULT_MODEL
+        # Normalize model name (handle both formats)
+        normalized_model = embedding_model.replace("sentence-transformers/", "")
+        full_model_name = f"sentence-transformers/{normalized_model}" if not embedding_model.startswith("sentence-transformers/") else embedding_model
+        
+        if normalized_model in [m.replace("sentence-transformers/", "") for m in AVAILABLE_MODELS.keys()]:
+            # Find the full model name
+            for key in AVAILABLE_MODELS.keys():
+                if normalized_model in key:
+                    full_model_name = key
+                    break
+        
+        if full_model_name not in AVAILABLE_MODELS:
+            logger.warning(f"[INIT] Model {full_model_name} not available. Using {DEFAULT_MODEL}")
+            full_model_name = DEFAULT_MODEL
 
         self.min_chunk_size = min_chunk_size
         self.max_chunk_size = max_chunk_size
         self.chunk_overlap = chunk_overlap
-        self.model_name = embedding_model
-        self.model_config = AVAILABLE_MODELS[embedding_model]
+        self.model_name = full_model_name
+        self.model_config = AVAILABLE_MODELS[full_model_name]
 
         # ✅ Use local cached models via HF_HOME environment variable
-        logger.info(f"[CHUNKER] 🚀 Initializing embedding model: {embedding_model}")
+        logger.info(f"[CHUNKER] 🚀 Initializing embedding model: {full_model_name}")
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=FutureWarning)
             warnings.filterwarnings("ignore", category=UserWarning)
-            self.embedder = HuggingFaceEmbeddings(model_name=embedding_model)
+            self.embedder = HuggingFaceEmbeddings(model_name=full_model_name)
         
         self.classifier = LegalChunkClassifier()
 
         logger.info(
             f"[CHUNKER] ✅ SemanticLegalChunker initialized | "
             f"min={min_chunk_size}, max={max_chunk_size}, overlap={chunk_overlap}, "
-            f"model={embedding_model} ({self.model_config['description']})"
+            f"model={full_model_name} ({self.model_config['description']})"
         )
 
     # --------------------------------------------------------
@@ -236,6 +257,15 @@ class SemanticLegalChunker:
                 "has_citations": bool(re.search(r"\(\d{4}\)\s+\d+\s+(?:SCC|AIR)", chunk_text)),
                 "has_statutes": bool(re.search(r"\b(?:Section|Article)\s+\d+", chunk_text)),
                 "has_parties": bool(re.search(r"\b(?:petitioner|respondent|appellant|defendant)\b", chunk_text, re.IGNORECASE)),
+                # Add chunking metadata
+                "chunking_metadata": {
+                    "chunking_technique": "semantic",
+                    "embedding_model": self.model_name,
+                    "model_dimensions": self.model_config["dimensions"],
+                    "min_chunk_size": self.min_chunk_size,
+                    "max_chunk_size": self.max_chunk_size,
+                    "chunk_overlap": self.chunk_overlap,
+                }
             }
             classified_chunks.append(chunk_data)
             
@@ -323,20 +353,32 @@ class RecursiveChunker:
         chunk_overlap: int,
         embedding_model: str = DEFAULT_MODEL
     ):
-        if embedding_model not in AVAILABLE_MODELS:
-            embedding_model = DEFAULT_MODEL
+        # Normalize model name (handle both formats)
+        normalized_model = embedding_model.replace("sentence-transformers/", "")
+        full_model_name = f"sentence-transformers/{normalized_model}" if not embedding_model.startswith("sentence-transformers/") else embedding_model
+        
+        if normalized_model in [m.replace("sentence-transformers/", "") for m in AVAILABLE_MODELS.keys()]:
+            # Find the full model name
+            for key in AVAILABLE_MODELS.keys():
+                if normalized_model in key:
+                    full_model_name = key
+                    break
+        
+        if full_model_name not in AVAILABLE_MODELS:
+            logger.warning(f"[INIT] Model {full_model_name} not available. Using {DEFAULT_MODEL}")
+            full_model_name = DEFAULT_MODEL
 
         self.min_chunk_size = min_chunk_size
         self.max_chunk_size = max_chunk_size
         self.chunk_overlap = chunk_overlap
-        self.model_name = embedding_model
-        self.model_config = AVAILABLE_MODELS[embedding_model]
+        self.model_name = full_model_name
+        self.model_config = AVAILABLE_MODELS[full_model_name]
         self.classifier = LegalChunkClassifier()
 
         logger.info(
             f"[CHUNKER] ✅ RecursiveChunker initialized | "
             f"min={min_chunk_size}, max={max_chunk_size}, overlap={chunk_overlap}, "
-            f"model={embedding_model} ({self.model_config['description']})"
+            f"model={full_model_name} ({self.model_config['description']})"
         )
 
     # --------------------------------------------------------
@@ -412,6 +454,15 @@ class RecursiveChunker:
                 "has_citations": bool(re.search(r"\(\d{4}\)\s+\d+\s+(?:SCC|AIR)", chunk_text)),
                 "has_statutes": bool(re.search(r"\b(?:Section|Article)\s+\d+", chunk_text)),
                 "has_parties": bool(re.search(r"\b(?:petitioner|respondent|appellant|defendant)\b", chunk_text, re.IGNORECASE)),
+                # Add chunking metadata
+                "chunking_metadata": {
+                    "chunking_technique": "recursive",
+                    "embedding_model": self.model_name,
+                    "model_dimensions": self.model_config["dimensions"],
+                    "min_chunk_size": self.min_chunk_size,
+                    "max_chunk_size": self.max_chunk_size,
+                    "chunk_overlap": self.chunk_overlap,
+                }
             })
             
             # Progress update every 20 chunks

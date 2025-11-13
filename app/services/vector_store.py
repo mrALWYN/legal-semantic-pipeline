@@ -1,3 +1,4 @@
+# app/services/vector_store.py
 import uuid
 import time
 import tracemalloc
@@ -27,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 class VectorStoreService:
     """
-    Handles all Qdrant operations with robust error handling.
+    Handles all Qdrant operations with robust error handling and dynamic collection management.
     """
 
     def __init__(self, host: Optional[str] = None, port: Optional[int] = None, 
@@ -37,8 +38,8 @@ class VectorStoreService:
         """
         self.host = host or settings.QDRANT_HOST
         self.port = port or settings.QDRANT_PORT
-        self.collection_name = collection_name or settings.COLLECTION_NAME
-        model_name = embedding_model or settings.EMBEDDING_MODEL
+        self.base_collection_name = collection_name or settings.COLLECTION_NAME
+        self.model_name = embedding_model or settings.EMBEDDING_MODEL
         
         # Initialize client with retry logic
         self.client = None
@@ -48,7 +49,6 @@ class VectorStoreService:
                 self.client = QdrantClient(
                     url=f"http://{self.host}:{self.port}",
                     timeout=30,
-                    # Disable internal validation to avoid version issues
                     prefer_grpc=False
                 )
                 # Test connection
@@ -64,72 +64,63 @@ class VectorStoreService:
 
         # Initialize embedding model
         try:
-            self.embedder = SentenceTransformer(model_name)
-            logger.info(f"[QDRANT] ✅ Embedding model '{model_name}' loaded")
+            self.embedder = SentenceTransformer(self.model_name)
+            self.embedding_dim = self.embedder.get_sentence_embedding_dimension()
+            logger.info(f"[QDRANT] ✅ Embedding model '{self.model_name}' loaded with {self.embedding_dim} dimensions")
         except Exception as e:
             logger.error(f"[QDRANT] ❌ Failed to load embedding model: {e}")
             raise
+            
+        # Create model-specific collection name
+        self.collection_name = f"{self.base_collection_name}_{self.embedding_dim}d"
+        logger.info(f"[QDRANT] Using collection: {self.collection_name}")
+
+    def _collection_exists(self) -> bool:
+        """Check if collection exists."""
+        try:
+            collections_response = self.client.get_collections()
+            existing_collections = [col.name for col in collections_response.collections]
+            return self.collection_name in existing_collections
+        except Exception as e:
+            logger.warning(f"[QDRANT] Failed to check collection existence: {e}")
+            return False
+
+    def _delete_collection(self) -> bool:
+        """Delete collection if it exists."""
+        try:
+            if self._collection_exists():
+                self.client.delete_collection(collection_name=self.collection_name)
+                logger.info(f"[QDRANT] Deleted existing collection: {self.collection_name}")
+            return True
+        except Exception as e:
+            logger.warning(f"[QDRANT] Failed to delete collection: {e}")
+            return False
 
     async def create_collection_safe(self):
-        """Create collection with robust error handling and compatibility."""
+        """Create collection with correct dimensions for the embedding model."""
         max_retries = 3
         for attempt in range(max_retries):
             try:
-                # Method 1: Try low-level API first (most reliable)
-                try:
-                    response = self.client._client.get(f"/collections/{self.collection_name}")
-                    if response.status_code == 200:
-                        logger.info(f"[QDRANT] Collection '{self.collection_name}' exists ✅")
-                        return True
-                except Exception:
-                    pass  # Collection doesn't exist, continue to create
-                
-                logger.info(f"[QDRANT] Creating collection '{self.collection_name}'...")
-                
-                # Method 2: Use low-level API for creation
-                collection_data = {
-                    "name": self.collection_name,
-                    "vectors": {
-                        "size": settings.EMBEDDING_DIM,
-                        "distance": "Cosine"
-                    }
-                }
-                
-                response = self.client._client.put(
-                    f"/collections/{self.collection_name}",
-                    json=collection_data
-                )
-                
-                if response.status_code == 200:
-                    logger.info(f"[QDRANT] ✅ Collection '{self.collection_name}' created successfully")
-                    return True
-                else:
-                    logger.warning(f"[QDRANT] Low-level API creation failed: {response.status_code}")
-                    
-            except Exception as e:
-                logger.warning(f"[QDRANT] Method 1 failed: {e}")
-                
-            # Method 3: Fallback to standard API
-            try:
-                collections_response = self.client.get_collections()
-                existing_collections = [col.name for col in collections_response.collections]
-                
-                if self.collection_name not in existing_collections:
-                    logger.info(f"[QDRANT] Creating collection '{self.collection_name}' via standard API...")
-                    self.client.create_collection(
-                        collection_name=self.collection_name,
-                        vectors_config=VectorParams(
-                            size=settings.EMBEDDING_DIM,
-                            distance=Distance.COSINE,
-                        ),
-                    )
-                    logger.info(f"[QDRANT] ✅ Collection '{self.collection_name}' created via standard API")
-                else:
+                # Check if collection exists with correct dimensions
+                if self._collection_exists():
                     logger.info(f"[QDRANT] Collection '{self.collection_name}' exists ✅")
+                    return True
+                
+                logger.info(f"[QDRANT] Creating collection '{self.collection_name}' with {self.embedding_dim} dimensions...")
+                
+                # Create new collection with correct dimensions
+                self.client.create_collection(
+                    collection_name=self.collection_name,
+                    vectors_config=VectorParams(
+                        size=self.embedding_dim,
+                        distance=Distance.COSINE,
+                    ),
+                )
+                logger.info(f"[QDRANT] ✅ Collection '{self.collection_name}' created successfully with {self.embedding_dim} dimensions")
                 return True
                 
             except Exception as e:
-                logger.warning(f"[QDRANT] Method 2 failed: {e}")
+                logger.warning(f"[QDRANT] Collection creation attempt {attempt + 1}/{max_retries} failed: {e}")
                 if attempt < max_retries - 1:
                     time.sleep(1)
                 else:
@@ -143,6 +134,7 @@ class VectorStoreService:
             return 0.0
 
         logger.info(f"[QDRANT] Embedding and upserting {len(chunks)} chunks for '{document_id}'...")
+        logger.info(f"[QDRANT] Using model: {self.model_name} ({self.embedding_dim} dimensions)")
 
         points = []
         tracemalloc.start()
@@ -168,6 +160,11 @@ class VectorStoreService:
                     # Embed text
                     vector = self.embedder.encode(text).tolist()
                     
+                    # Verify vector dimension
+                    if len(vector) != self.embedding_dim:
+                        logger.error(f"[QDRANT] ❌ Vector dimension mismatch: expected {self.embedding_dim}, got {len(vector)}")
+                        raise ValueError(f"Vector dimension mismatch: expected {self.embedding_dim}, got {len(vector)}")
+                    
                     # Create point with proper structure
                     point = PointStruct(
                         id=str(uuid.uuid4()),
@@ -186,6 +183,9 @@ class VectorStoreService:
                             "has_parties": bool(chunk.get("has_parties", False)),
                             # Include chunking metadata if available
                             "chunking_metadata": chunk.get("chunking_metadata", {}),
+                            # Include model info
+                            "embedding_model": self.model_name,
+                            "embedding_dim": self.embedding_dim,
                         }
                     )
                     batch_points.append(point)
@@ -230,6 +230,7 @@ class VectorStoreService:
         try:
             document_id = chunks[0].get("document_id", "unknown_document") if chunks else "unknown_document"
             logger.info(f"[QDRANT] 🚀 Starting ingestion for {len(chunks)} chunks (document: {document_id})")
+            logger.info(f"[QDRANT] Using model: {self.model_name} ({self.embedding_dim} dimensions)")
             
             # Step 1: Ensure collection exists
             logger.info("[QDRANT] 📝 Step 1/3: Verifying collection...")
@@ -262,6 +263,7 @@ class VectorStoreService:
             logger.info(f"  • Chunks ingested: {len(chunks)}")
             logger.info(f"  • Total points: {points_count}")
             logger.info(f"  • Embedding time: {embedding_time:.2f}s")
+            logger.info(f"  • Model: {self.model_name} ({self.embedding_dim} dimensions)")
             
             return True
             
@@ -277,6 +279,7 @@ class VectorStoreService:
                 return []
 
             logger.info(f"[QDRANT] 🔍 Searching for '{query}' (top_k={top_k})")
+            logger.info(f"[QDRANT] Using collection: {self.collection_name}")
 
             # Encode query
             query_vec = self.embedder.encode(query).tolist()
@@ -307,6 +310,8 @@ class VectorStoreService:
                         "has_citations": payload.get("has_citations"),
                         "has_statutes": payload.get("has_statutes"),
                         "has_parties": payload.get("has_parties"),
+                        "embedding_model": payload.get("embedding_model"),
+                        "embedding_dim": payload.get("embedding_dim"),
                     },
                     # Include chunking metadata in search results
                     "chunking_metadata": payload.get("chunking_metadata", {})
@@ -332,42 +337,21 @@ class VectorStoreService:
             return False
 
     async def get_collection_info(self) -> Dict:
-        """Get collection info with fallback."""
+        """Get collection info."""
         try:
-            # Try low-level API first
-            try:
-                response = self.client._client.get(f"/collections/{self.collection_name}")
-                if response.status_code == 200:
-                    data = response.json()
-                    result = data.get('result', {})
-                    return {
-                        "name": result.get('name', 'unknown'),
-                        "vector_size": result.get('vectors', {}).get('size', 0),
-                        "distance": result.get('vectors', {}).get('distance', 'unknown'),
-                        "points_count": result.get('points_count', 0),
-                        "status": result.get('status', 'unknown'),
-                    }
-            except:
-                pass
-            
-            # Fallback to standard API
-            try:
-                info = self.client.get_collection(self.collection_name)
-                return {
-                    "name": getattr(info.config.params, 'name', 'unknown'),
-                    "vector_size": getattr(info.config.params.vectors, 'size', 0),
-                    "distance": getattr(info.config.params.vectors, 'distance', 'unknown'),
-                    "points_count": getattr(info, 'points_count', 0),
-                    "status": getattr(info, 'status', 'unknown'),
-                }
-            except:
-                pass
+            if not self._collection_exists():
+                return {"error": "Collection does not exist"}
                 
-            return {}
-            
+            info = self.client.get_collection(self.collection_name)
+            return {
+                "name": self.collection_name,
+                "vector_size": getattr(info.config.params.vectors, 'size', 0),
+                "distance": getattr(info.config.params.vectors, 'distance', 'unknown'),
+                "points_count": getattr(info, 'points_count', 0),
+                "status": getattr(info, 'status', 'unknown'),
+                "embedding_model": self.model_name,
+                "embedding_dim": self.embedding_dim,
+            }
         except Exception as e:
             logger.warning(f"[QDRANT] Failed to get collection info: {e}")
-            return {}
-
-# Backward compatibility for methods that might be called elsewhere
-VectorStoreService.create_collection = VectorStoreService.create_collection_safe
+            return {"error": str(e)}

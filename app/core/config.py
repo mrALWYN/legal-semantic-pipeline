@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     # Embedding Model Configuration
     # ============================================================
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
-    EMBEDDING_DIM: int = 384  # Dimension size for the above model
+    EMBEDDING_DIM: int = 384  # Default dimension size, but will be dynamically determined
 
     # ============================================================
     # Chunking Configuration
@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     # ============================================================
     # ⚙️ MLflow / Model Registry Configuration
     # ============================================================
-    MLFLOW_TRACKING_URI: str = "http://localhost:5000"
+    MLFLOW_TRACKING_URI: str = "http://mlflow:5000"  # Changed to use docker service name
     REGISTERED_MODEL_NAME: str = "legal-embed-model"
     EXPERIMENT_NAME: str = "ingest_experiments"
 
@@ -65,9 +65,20 @@ class Settings(BaseSettings):
     DEFAULT_CHUNK_STRATEGY: str = "semantic-legal"  # or 'recursive-legal'
     AVAILABLE_EMBED_MODELS: list[str] = [
         "sentence-transformers/all-MiniLM-L6-v2",
+        "sentence-transformers/all-mpnet-base-v2",  # Added mpnet model
         "sentence-transformers/paraphrase-MiniLM-L12-v2",
         "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
     ]
+
+    # ============================================================
+    # Model Dimension Mapping (for reference)
+    # ============================================================
+    MODEL_DIMENSIONS: dict[str, int] = {
+        "sentence-transformers/all-MiniLM-L6-v2": 384,
+        "sentence-transformers/all-mpnet-base-v2": 768,
+        "sentence-transformers/paraphrase-MiniLM-L12-v2": 384,
+        "sentence-transformers/multi-qa-MiniLM-L6-cos-v1": 384
+    }
 
     # ============================================================
     # Pydantic Environment Configuration
