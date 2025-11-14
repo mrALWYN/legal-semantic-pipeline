@@ -89,6 +89,45 @@ class Settings(BaseSettings):
 
 
 # ============================================================
+# 🧠 Model Dimension Mapping (Reverse and Additional)
+# ============================================================
+MODEL_DIMENSIONS_REVERSE: dict[int, str] = {
+    384: "all-MiniLM-L6-v2",
+    768: "all-mpnet-base-v2",
+}
+
+MODEL_NAMES: dict[str, int] = {
+    "all-MiniLM-L6-v2": 384,
+    "all-mpnet-base-v2": 768,
+    "paraphrase-MiniLM-L12-v2": 384,
+    "multi-qa-MiniLM-L6-cos-v1": 384,
+}
+
+AVAILABLE_MODELS: dict[str, dict] = {
+    "all-MiniLM-L6-v2": {
+        "name": "all-MiniLM-L6-v2",
+        "description": "Fast, lightweight (384 dims)",
+        "dimensions": 384,
+    },
+    "all-mpnet-base-v2": {
+        "name": "all-mpnet-base-v2",
+        "description": "High quality (768 dims)",
+        "dimensions": 768,
+    },
+    "paraphrase-MiniLM-L12-v2": {
+        "name": "paraphrase-MiniLM-L12-v2",
+        "description": "Paraphrase model (384 dims)",
+        "dimensions": 384,
+    },
+    "multi-qa-MiniLM-L6-cos-v1": {
+        "name": "multi-qa-MiniLM-L6-cos-v1",
+        "description": "QA optimized (384 dims)",
+        "dimensions": 384,
+    },
+}
+
+
+# ============================================================
 # Singleton-style settings accessor
 # ============================================================
 @lru_cache()

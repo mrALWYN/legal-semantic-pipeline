@@ -1,0 +1,178 @@
+{
+  "id": null,
+  "title": "Legal Pipeline - System & API Performance",
+  "tags": ["legal", "api", "performance", "system"],
+  "timezone": "browser",
+  "schemaVersion": 16,
+  "version": 1,
+  "refresh": "25s",
+
+  "panels": [
+
+    {
+      "id": 1,
+      "type": "graph",
+      "title": "API Request Rate",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(grafana_http_request_duration_seconds_count[5m])) by (handler, method, status_code)",
+          "legendFormat": "{{method}} {{handler}} {{status_code}}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+
+    {
+      "id": 2,
+      "type": "graph",
+      "title": "API Latency (95th percentile)",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(grafana_http_request_duration_seconds_bucket[5m])) by (le, handler, method))",
+          "legendFormat": "{{method}} {{handler}}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "API Error Rate (%)",
+      "gridPos": { "x": 0, "y": 8, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(rate(grafana_api_response_status_total{code=~\"5..\"}[5m])) / sum(rate(grafana_api_response_status_total[5m])) * 100",
+          "legendFormat": "Error %",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+
+    {
+      "id": 4,
+      "type": "graph",
+      "title": "QPS by Handler",
+      "gridPos": { "x": 8, "y": 8, "w": 16, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(grafana_http_request_duration_seconds_count[5m])) by (handler)",
+          "legendFormat": "{{handler}}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+
+    {
+      "id": 5,
+      "type": "graph",
+      "title": "Prometheus Datasource Latency (p95)",
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(grafana_datasource_request_duration_seconds_bucket[5m])) by (le, datasource))",
+          "legendFormat": "{{datasource}} p95",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Qdrant Connection Failures",
+      "gridPos": { "x": 12, "y": 16, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(net_conntrack_dialer_conn_failed_total{dialer_name=\"Prometheus2\"})",
+          "legendFormat": "Failures",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+
+    {
+      "id": 7,
+      "type": "graph",
+      "title": "Qdrant Failure Rate",
+      "gridPos": { "x": 18, "y": 16, "w": 6, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(net_conntrack_dialer_conn_failed_total{dialer_name=\"Prometheus2\"}[5m])",
+          "legendFormat": "Failures/sec",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+
+    {
+      "id": 8,
+      "type": "graph",
+      "title": "Memory Usage",
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "process_resident_memory_bytes",
+          "legendFormat": "RSS Memory",
+          "refId": "A"
+        },
+        {
+          "expr": "go_memstats_alloc_bytes",
+          "legendFormat": "Go Allocated",
+          "refId": "B"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+
+    {
+      "id": 9,
+      "type": "graph",
+      "title": "CPU Usage (Process)",
+      "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(process_cpu_seconds_total[2m])",
+          "legendFormat": "CPU seconds/sec",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+
+    {
+      "id": 10,
+      "type": "graph",
+      "title": "Latency Trends (p50 / p95 / p99)",
+      "gridPos": { "x": 0, "y": 32, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(grafana_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(grafana_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p95",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(grafana_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p99",
+          "refId": "C"
+        }
+      ],
+      "datasource": "Prometheus"
+    }
+
+  ]
+}

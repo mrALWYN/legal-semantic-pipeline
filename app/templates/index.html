@@ -230,8 +230,10 @@
 
     <label for="modelSelect">🤖 Select Embedding Model:</label>
     <select id="modelSelect">
-      <option value="all-MiniLM-L6-v2">all-MiniLM-L6-v2 (Fast, lightweight)</option>
-      <option value="all-mpnet-base-v2">all-mpnet-base-v2 (High quality)</option>
+      <option value="all-MiniLM-L6-v2">all-MiniLM-L6-v2 (Fast, lightweight - 384 dims)</option>
+      <option value="all-mpnet-base-v2">all-mpnet-base-v2 (High quality - 768 dims)</option>
+      <option value="paraphrase-MiniLM-L12-v2">paraphrase-MiniLM-L12-v2 (Paraphrase - 384 dims)</option>
+      <option value="multi-qa-MiniLM-L6-cos-v1">multi-qa-MiniLM-L6-cos-v1 (QA optimized - 384 dims)</option>
     </select>
 
     <section>
@@ -244,13 +246,13 @@
       </select>
 
       <label for="minChunkSize">Min Chunk Size (chars):</label>
-      <input type="number" id="minChunkSize" value="500">
+      <input type="number" id="minChunkSize" value="500" min="100" max="2000">
 
       <label for="maxChunkSize">Max Chunk Size (chars):</label>
-      <input type="number" id="maxChunkSize" value="4500">
+      <input type="number" id="maxChunkSize" value="4500" min="1000" max="10000">
 
       <label for="chunkOverlap">Chunk Overlap (chars):</label>
-      <input type="number" id="chunkOverlap" value="250">
+      <input type="number" id="chunkOverlap" value="250" min="0" max="1000">
     </section>
 
     <input type="file" id="pdfFile" accept=".pdf" />
@@ -263,7 +265,7 @@
     <h2>🔍 Query Legal Twin</h2>
 
     <label for="queryText">Enter your query:</label>
-    <textarea id="queryText" rows="8"></textarea>
+    <textarea id="queryText" rows="8" placeholder="e.g. trademark infringement appeal..."></textarea>
 
     <label for="topK">Number of top results:</label>
     <select id="topK">
@@ -273,7 +275,7 @@
       <option value="20">Top 20</option>
     </select>
 
-    <button onclick="queryTwin()">Search</button>
+    <button onclick="queryTwin()">Search All Collections</button>
     <div id="queryResults"></div>
   </section>
 
@@ -302,14 +304,14 @@
       formData.append("max_chunk_size", maxChunkSize);
       formData.append("chunk_overlap", chunkOverlap);
 
-      status.textContent = "Uploading and processing... ⏳";
+      status.textContent = "Uploading and processing with model: " + selectedModel + " ⏳";
 
       try {
         const res = await fetch("/api/v1/upload-pdf", { method: "POST", body: formData });
         const data = await res.json();
 
         if (res.ok) {
-          status.textContent = "✅ " + data.message;
+          status.textContent = "✅ " + data.message + " (Model: " + selectedModel + ")";
         } else {
           status.textContent = "❌ Error: " + (data.detail || "Upload failed");
         }
@@ -344,7 +346,7 @@
         return;
       }
 
-      resultsDiv.innerHTML = "Searching...";
+      resultsDiv.innerHTML = "Searching all collections... ⏳";
 
       try {
         const res = await fetch(`/api/v1/query-twin?query=${encodeURIComponent(queryText)}&top_k=${topK}`);
@@ -355,10 +357,12 @@
           return;
         }
 
-        resultsDiv.innerHTML = `<h3>Top ${data.results.length} results for: <em>${data.query}</em></h3>`;
+        resultsDiv.innerHTML = `<h3>Top ${data.results.length} results for: <em>${data.query}</em> (across all collections)</h3>`;
 
         data.results.forEach((r, i) => {
           const type = r.type || r?.metadata?.type || "Legal_Content";
+          const modelInfo = r?.chunking_metadata?.embedding_model || "Unknown Model";
+          const dimensions = r?.chunking_metadata?.model_dimensions || "N/A";
 
           resultsDiv.innerHTML += `
             <div class="result">
@@ -369,7 +373,7 @@
 
               <div class="meta-line">
                 <span class="tag">${type}</span>
-                Confidence: ${(r.confidence || 0).toFixed(2)}
+                Confidence Score: ${(r.score || 0).toFixed(2)}
               </div>
 
               <p>${r.chunk_text}</p>

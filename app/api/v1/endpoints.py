@@ -10,6 +10,7 @@ from app.models.schemas import (
     SearchResult,
 )
 from app.core.pipeline import ingest_legal_document
+from app.core.model_registry import get_model_by_dimension
 from app.services.vector_store import VectorStoreService
 from app.core.config import settings
 from app.services.metrics import (
@@ -59,6 +60,7 @@ async def ingest_document(request: IngestDocumentRequest):
 # ============================================================
 # 🔍 SEMANTIC QUERY ENDPOINT (with Prometheus metrics)
 # ============================================================
+# In app/api/v1/endpoints.py - modify the query_twin function
 @router.get("/query-twin", response_model=QueryResponse)
 async def query_twin(
     query: str = Query(..., description="Text query for semantic search"),
@@ -68,30 +70,44 @@ async def query_twin(
     ),
 ):
     """
-    Perform a semantic vector search on Qdrant.
+    Perform a semantic vector search across ALL Qdrant collections.
     Optionally filter by `document_id` (citation name).
-    Returns top-k matches with full metadata.
+    Returns top-k matches with full metadata from all collections.
     """
     try:
-        # ✅ Increment Prometheus counters
         search_requests.inc()
         start_time = time.time()
 
         logger.info(
-            f"[QUERY] 🔍 Searching for: '{query}' (top_k={top_k}, filter={document_id})"
+            f"[QUERY] 🔍 Searching across all collections for: '{query}' (top_k={top_k}, filter={document_id})"
         )
 
-        # ✅ Initialize Qdrant vector service
-        vector_service = VectorStoreService(
-            host=settings.QDRANT_HOST,
-            port=settings.QDRANT_PORT,
-            collection_name=settings.COLLECTION_NAME,
-        )
+        # Get all available collections
+        all_results = []
+        
+        # For each embedding model dimension
+        model_dimensions = [384, 768]  # Add all your model dimensions
+        for dim in model_dimensions:
+            try:
+                collection_name = f"{settings.COLLECTION_NAME}_{dim}d"
+                
+                # Initialize vector service for this collection
+                vector_service = VectorStoreService(
+                    host=settings.QDRANT_HOST,
+                    port=settings.QDRANT_PORT,
+                    collection_name=collection_name,
+                    embedding_model=get_model_by_dimension(dim)  # You'll need to implement this
+                )
+                
+                # Perform search on this collection
+                collection_results = vector_service.search(query=query, top_k=top_k*2)  # Get more to rank later
+                all_results.extend(collection_results)
+                
+            except Exception as e:
+                logger.warning(f"[QUERY] Failed to search collection {collection_name}: {e}")
+                continue
 
-        # ✅ Perform semantic search
-        all_results = vector_service.search(query=query, top_k=top_k)
-
-        # ✅ Optional filter by document ID
+        # Optional filter by document ID across all results
         if document_id:
             filtered_results = [
                 r
@@ -104,29 +120,31 @@ async def query_twin(
         else:
             filtered_results = all_results
 
-        # ✅ Calculate duration & log metrics
+        # Sort all results by score and take top_k
+        filtered_results.sort(key=lambda x: x.get("score", 0), reverse=True)
+        final_results = filtered_results[:top_k]
+
+        # Calculate duration & log metrics
         duration = time.time() - start_time
         search_duration_hist.observe(duration)
-        search_results.inc(len(filtered_results))
+        search_results.inc(len(final_results))
 
         logger.info(
-            f"[METRICS] Search duration={duration:.2f}s | results={len(filtered_results)}"
+            f"[METRICS] Search duration={duration:.2f}s | results={len(final_results)}"
         )
 
-        # ✅ Prepare structured response - FIXED: Include type field
+        # Prepare structured response
         results = []
-        for r in filtered_results:
-            # Extract metadata and include type at the root level
+        for r in final_results:
             metadata = r.get("metadata", {})
             
-            # Create SearchResult with type at root level and chunking metadata
             result = SearchResult(
                 chunk_text=r.get("chunk_text", ""),
                 citation_id=r.get("document_id", r.get("citation_id", "")),
                 score=round(r.get("score", 0), 4),
-                type=r.get("type", ""),  # Add type at root level
+                type=r.get("type", ""),
                 metadata=r.get("metadata", {}),
-                chunking_metadata=r.get("chunking_metadata", {}),  # Add chunking metadata
+                chunking_metadata=r.get("chunking_metadata", {}),
             )
             results.append(result)
 

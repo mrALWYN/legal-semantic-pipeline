@@ -7,11 +7,11 @@ from typing import List, Dict, Optional
 
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import (
-    VectorParams, 
-    Distance, 
+    VectorParams,
+    Distance,
     PointStruct,
     CollectionStatus,
-    UpdateStatus
+    UpdateStatus,
 )
 from sentence_transformers import SentenceTransformer
 
@@ -26,7 +26,7 @@ from app.services.metrics import (
     processing_failures,
     embedding_similarity,
     vector_index_size_bytes,
-    qdrant_points_count
+    qdrant_points_count,
 )
 from app.services.drift_detection import drift_detector
 
@@ -38,16 +38,32 @@ class VectorStoreService:
     Handles all Qdrant operations with robust error handling and dynamic collection management.
     """
 
-    def __init__(self, host: Optional[str] = None, port: Optional[int] = None, 
-                 collection_name: Optional[str] = None, embedding_model: Optional[str] = None):
+    def __init__(
+        self,
+        host: Optional[str] = None,
+        port: Optional[int] = None,
+        collection_name: Optional[str] = None,
+        embedding_model: Optional[str] = None,
+    ):
         """
         Initialize with settings fallback and robust error handling.
+        embedding_model may be:
+          - a str (model name/path)
+          - a SentenceTransformer instance
         """
+
         self.host = host or settings.QDRANT_HOST
         self.port = port or settings.QDRANT_PORT
         self.base_collection_name = collection_name or settings.COLLECTION_NAME
-        self.model_name = embedding_model or settings.EMBEDDING_MODEL
-        
+
+        # keep original input for later (could be string or instance)
+        self._embedding_model_input = embedding_model or settings.EMBEDDING_MODEL
+
+        # Default placeholders
+        self.model_name_str: str = str(self._embedding_model_input)
+        self.embedder: Optional[SentenceTransformer] = None
+        self.embedding_dim: Optional[int] = None
+
         # Initialize client with retry logic
         self.client = None
         max_retries = 3
@@ -56,7 +72,7 @@ class VectorStoreService:
                 self.client = QdrantClient(
                     url=f"http://{self.host}:{self.port}",
                     timeout=30,
-                    prefer_grpc=False
+                    prefer_grpc=False,
                 )
                 # Test connection
                 self.client.get_collections()
@@ -70,18 +86,62 @@ class VectorStoreService:
                     raise
                 time.sleep(2)
 
-        # Initialize embedding model
+        # ----------------------------------------------------------------------
+        # Proper embedding model initialization (supports both string + instance)
+        # ----------------------------------------------------------------------
         try:
-            self.embedder = SentenceTransformer(self.model_name)
-            self.embedding_dim = self.embedder.get_sentence_embedding_dimension()
-            logger.info(f"[QDRANT] ✅ Embedding model '{self.model_name}' loaded with {self.embedding_dim} dimensions")
+            # If caller passed a SentenceTransformer instance, use it directly
+            if isinstance(self._embedding_model_input, SentenceTransformer):
+                self.embedder = self._embedding_model_input
+                self.embedding_dim = self.embedder.get_sentence_embedding_dimension()
+
+                # Try to obtain a readable model name from the instance
+                model_name_candidate = None
+                try:
+                    # many SentenceTransformer objects contain internal module info
+                    model_name_candidate = getattr(self.embedder, "name", None)
+                except Exception:
+                    model_name_candidate = None
+
+                if not model_name_candidate:
+                    try:
+                        # sometimes the underlying HF module has name_or_path
+                        model_name_candidate = (
+                            getattr(self.embedder, "_first_module", lambda: None)()
+                        )
+                        # _first_module() might return a module object; try name_or_path attribute
+                        if model_name_candidate is not None:
+                            model_name_candidate = getattr(model_name_candidate, "name_or_path", None)
+                    except Exception:
+                        model_name_candidate = None
+
+                if not model_name_candidate:
+                    model_name_candidate = self.embedder.__class__.__name__
+
+                self.model_name_str = str(model_name_candidate)
+                logger.info(
+                    f"[QDRANT] ✅ Using provided embedding model instance ({self.embedding_dim} dimensions) - {self.model_name_str}"
+                )
+
+            else:
+                # Otherwise assume a string model path/name and load it
+                self.model_name_str = str(self._embedding_model_input)
+                self.embedder = SentenceTransformer(self.model_name_str)
+                self.embedding_dim = self.embedder.get_sentence_embedding_dimension()
+                logger.info(f"[QDRANT] ✅ Loaded embedding model '{self.model_name_str}' with {self.embedding_dim} dimensions")
+
         except Exception as e:
             logger.error(f"[QDRANT] ❌ Failed to load embedding model: {e}")
             processing_failures.labels(stage="model_load").inc()
             raise
-            
+
         # Create model-specific collection name
-        self.collection_name = f"{self.base_collection_name}_{self.embedding_dim}d"
+        # Avoid double suffix
+        if self.base_collection_name.endswith(f"_{self.embedding_dim}d"):
+            self.collection_name = self.base_collection_name
+        else:
+            self.collection_name = f"{self.base_collection_name}_{self.embedding_dim}d"
+
         logger.info(f"[QDRANT] Using collection: {self.collection_name}")
 
     def _collection_exists(self) -> bool:
@@ -114,9 +174,9 @@ class VectorStoreService:
                 if self._collection_exists():
                     logger.info(f"[QDRANT] Collection '{self.collection_name}' exists ✅")
                     return True
-                
+
                 logger.info(f"[QDRANT] Creating collection '{self.collection_name}' with {self.embedding_dim} dimensions...")
-                
+
                 # Create new collection with correct dimensions
                 self.client.create_collection(
                     collection_name=self.collection_name,
@@ -127,7 +187,7 @@ class VectorStoreService:
                 )
                 logger.info(f"[QDRANT] ✅ Collection '{self.collection_name}' created successfully with {self.embedding_dim} dimensions")
                 return True
-                
+
             except Exception as e:
                 logger.warning(f"[QDRANT] Collection creation attempt {attempt + 1}/{max_retries} failed: {e}")
                 if attempt < max_retries - 1:
@@ -144,7 +204,7 @@ class VectorStoreService:
             return 0.0
 
         logger.info(f"[QDRANT] Embedding and upserting {len(chunks)} chunks for '{document_id}'...")
-        logger.info(f"[QDRANT] Using model: {self.model_name} ({self.embedding_dim} dimensions)")
+        logger.info(f"[QDRANT] Using model: {self.model_name_str} ({self.embedding_dim} dimensions)")
 
         points = []
         tracemalloc.start()
@@ -154,14 +214,14 @@ class VectorStoreService:
         try:
             # Process chunks in smaller batches to avoid memory issues
             batch_size = 50
-            
+
             for batch_start in range(0, len(chunks), batch_size):
                 batch_end = min(batch_start + batch_size, len(chunks))
                 batch_chunks = chunks[batch_start:batch_end]
                 batch_points = []
-                
+
                 logger.info(f"[QDRANT] Processing batch {batch_start//batch_size + 1}/{(len(chunks)-1)//batch_size + 1}")
-                
+
                 for i, chunk in enumerate(batch_chunks):
                     text = chunk.get("text", "").strip()
                     if not text or len(text) < 10:  # Minimum text length
@@ -169,13 +229,13 @@ class VectorStoreService:
 
                     # Embed text
                     vector = self.embedder.encode(text).tolist()
-                    
+
                     # Verify vector dimension
                     if len(vector) != self.embedding_dim:
                         logger.error(f"[QDRANT] ❌ Vector dimension mismatch: expected {self.embedding_dim}, got {len(vector)}")
                         processing_failures.labels(stage="vector_dimension").inc()
                         raise ValueError(f"Vector dimension mismatch: expected {self.embedding_dim}, got {len(vector)}")
-                    
+
                     # Create point with proper structure
                     point = PointStruct(
                         id=str(uuid.uuid4()),
@@ -194,8 +254,8 @@ class VectorStoreService:
                             "has_parties": bool(chunk.get("has_parties", False)),
                             # Include chunking metadata if available
                             "chunking_metadata": chunk.get("chunking_metadata", {}),
-                            # Include model info
-                            "embedding_model": self.model_name,
+                            # Include model info (use readable string)
+                            "embedding_model": self.model_name_str,
                             "embedding_dim": self.embedding_dim,
                         }
                     )
@@ -204,18 +264,18 @@ class VectorStoreService:
                 if batch_points:
                     # Record storage start time
                     start_storage = time.time()
-                    
+
                     # Upsert batch
                     upsert_result = self.client.upsert(
                         collection_name=self.collection_name,
                         points=batch_points,
                         wait=True
                     )
-                    
+
                     # Record storage time
                     storage_time = time.time() - start_storage
                     storage_time_hist.observe(storage_time)
-                    
+
                     total_points += len(batch_points)
                     logger.info(f"[QDRANT] ✅ Batch upserted {len(batch_points)} chunks")
 
@@ -228,7 +288,7 @@ class VectorStoreService:
                 embedding_time_hist.observe(embedding_time)
                 memory_usage_bytes.set(peak)
                 ingest_chunks.inc(total_points)
-                
+
                 # Calculate and track costs
                 try:
                     # Get current points count for cost calculation
@@ -237,22 +297,22 @@ class VectorStoreService:
                         points_count = count_result.count if count_result else total_points
                     except:
                         points_count = total_points
-                    
+
                     # Calculate and track costs
                     drift_detector.calculate_cost_metrics(
                         embedding_time=embedding_time,
                         document_length=sum(len(c.get("text", "")) for c in chunks),
                         points_count=points_count,
-                        model_name=self.model_name
+                        model_name=self.model_name_str
                     )
-                    
+
                     # Update vector index size and points count metrics
                     vector_index_size_bytes.set(points_count * self.embedding_dim * 4)  # Approximate size
                     qdrant_points_count.set(points_count)
-                    
+
                 except Exception as cost_err:
                     logger.warning(f"[COST] Failed to track costs: {cost_err}")
-                    
+
             except Exception as metric_err:
                 logger.warning(f"[METRICS] Failed to record metrics: {metric_err}")
 
@@ -274,8 +334,8 @@ class VectorStoreService:
         try:
             document_id = chunks[0].get("document_id", "unknown_document") if chunks else "unknown_document"
             logger.info(f"[QDRANT] 🚀 Starting ingestion for {len(chunks)} chunks (document: {document_id})")
-            logger.info(f"[QDRANT] Using model: {self.model_name} ({self.embedding_dim} dimensions)")
-            
+            logger.info(f"[QDRANT] Using model: {self.model_name_str} ({self.embedding_dim} dimensions)")
+
             # Step 1: Ensure collection exists
             logger.info("[QDRANT] 📝 Step 1/3: Verifying collection...")
             collection_ok = await self.create_collection_safe()
@@ -283,7 +343,7 @@ class VectorStoreService:
                 logger.error("[QDRANT] ❌ Collection setup failed")
                 processing_failures.labels(stage="collection_setup").inc()
                 return False
-            
+
             # Step 2: Upsert chunks
             logger.info("[QDRANT] 📝 Step 2/3: Upserting chunks...")
             try:
@@ -292,7 +352,7 @@ class VectorStoreService:
                 logger.error(f"[QDRANT] ❌ Upsert failed: {e}")
                 processing_failures.labels(stage="upsert_chunks").inc()
                 return False
-            
+
             # Step 3: Verify success
             logger.info("[QDRANT] 📝 Step 3/3: Verifying ingestion...")
             try:
@@ -300,25 +360,25 @@ class VectorStoreService:
                 count_result = self.client.count(self.collection_name)
                 points_count = count_result.count if count_result else "unknown"
                 logger.info(f"[QDRANT] ✅ Total points in collection: {points_count}")
-                
+
                 # Update metrics
                 if isinstance(points_count, int):
                     qdrant_points_count.set(points_count)
                     vector_index_size_bytes.set(points_count * self.embedding_dim * 4)  # Approximate size
-                    
+
             except Exception as e:
                 logger.warning(f"[QDRANT] ⚠️ Could not verify points count: {e}")
                 points_count = "unknown"
-            
+
             logger.info(f"[QDRANT] 🎉 INGESTION COMPLETE")
             logger.info(f"  • Document: {document_id}")
             logger.info(f"  • Chunks ingested: {len(chunks)}")
             logger.info(f"  • Total points: {points_count}")
             logger.info(f"  • Embedding time: {embedding_time:.2f}s")
-            logger.info(f"  • Model: {self.model_name} ({self.embedding_dim} dimensions)")
-            
+            logger.info(f"  • Model: {self.model_name_str} ({self.embedding_dim} dimensions)")
+
             return True
-            
+
         except Exception as e:
             logger.error(f"[QDRANT] ❌ Failed to ingest chunks: {e}")
             processing_failures.labels(stage="ingestion").inc()
@@ -355,10 +415,10 @@ class VectorStoreService:
                 payload = hit.payload or {}
                 score = round(hit.score, 4)
                 scores.append(score)
-                
+
                 # Record similarity score for monitoring
                 embedding_similarity.observe(score)
-                
+
                 results.append({
                     "chunk_text": payload.get("text", ""),
                     "document_id": payload.get("document_id", ""),
@@ -382,12 +442,12 @@ class VectorStoreService:
 
             # Sort by score (descending)
             results.sort(key=lambda x: x["score"], reverse=True)
-            
+
             # Record search metrics
             search_duration = time.time() - start_time
             search_duration_hist.observe(search_duration)
             search_results.inc(len(results))
-            
+
             logger.info(f"[QDRANT] ✅ Retrieved {len(results)} results for query '{query}' in {search_duration:.2f}s")
             return results
 
@@ -413,22 +473,22 @@ class VectorStoreService:
         try:
             if not self._collection_exists():
                 return {"error": "Collection does not exist"}
-                
+
             info = self.client.get_collection(self.collection_name)
-            
+
             # Update metrics with current collection info
-            points_count = getattr(info, 'points_count', 0)
+            points_count = getattr(info, "points_count", 0)
             if points_count:
                 qdrant_points_count.set(points_count)
                 vector_index_size_bytes.set(points_count * self.embedding_dim * 4)  # Approximate size
-                
+
             return {
                 "name": self.collection_name,
-                "vector_size": getattr(info.config.params.vectors, 'size', 0),
-                "distance": getattr(info.config.params.vectors, 'distance', 'unknown'),
+                "vector_size": getattr(info.config.params.vectors, "size", 0),
+                "distance": getattr(info.config.params.vectors, "distance", "unknown"),
                 "points_count": points_count,
-                "status": getattr(info, 'status', 'unknown'),
-                "embedding_model": self.model_name,
+                "status": getattr(info, "status", "unknown"),
+                "embedding_model": self.model_name_str,
                 "embedding_dim": self.embedding_dim,
             }
         except Exception as e:

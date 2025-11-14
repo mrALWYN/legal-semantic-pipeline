@@ -281,7 +281,7 @@ class SemanticLegalChunker:
                 "type": classification.category,
                 "char_count": len(chunk_text),
                 "sentence_count": len(re.split(r"[.!?]", chunk_text)),
-                "confidence": classification.confidence,
+                "confidence": float(classification.confidence),  # Ensure it's a float
                 "has_citations": bool(re.search(r"\(\d{4}\)\s+\d+\s+(?:SCC|AIR)", chunk_text)),
                 "has_statutes": bool(re.search(r"\b(?:Section|Article)\s+\d+", chunk_text)),
                 "has_parties": bool(re.search(r"\b(?:petitioner|respondent|appellant|defendant)\b", chunk_text, re.IGNORECASE)),
@@ -293,6 +293,7 @@ class SemanticLegalChunker:
                     "min_chunk_size": self.min_chunk_size,
                     "max_chunk_size": self.max_chunk_size,
                     "chunk_overlap": self.chunk_overlap,
+                    "confidence": float(classification.confidence),  # Also in metadata for consistency
                 }
             }
             classified_chunks.append(chunk_data)
@@ -511,7 +512,7 @@ class RecursiveChunker:
                 "type": classification.category,
                 "char_count": len(chunk_text),
                 "sentence_count": len(re.split(r"[.!?]", chunk_text)),
-                "confidence": classification.confidence,
+                "confidence": float(classification.confidence),  # Ensure it's a float
                 "has_citations": bool(re.search(r"\(\d{4}\)\s+\d+\s+(?:SCC|AIR)", chunk_text)),
                 "has_statutes": bool(re.search(r"\b(?:Section|Article)\s+\d+", chunk_text)),
                 "has_parties": bool(re.search(r"\b(?:petitioner|respondent|appellant|defendant)\b", chunk_text, re.IGNORECASE)),
@@ -523,6 +524,7 @@ class RecursiveChunker:
                     "min_chunk_size": self.min_chunk_size,
                     "max_chunk_size": self.max_chunk_size,
                     "chunk_overlap": self.chunk_overlap,
+                    "confidence": float(classification.confidence),  # Also in metadata for consistency
                 }
             }
             final_chunks.append(chunk_data)
