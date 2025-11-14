@@ -1,77 +1,86 @@
 {
-  "dashboard": {
-    "id": null,
-    "title": "Legal Pipeline - System Health",
-    "tags": ["legal", "system", "health"],
-    "timezone": "browser",
-    "schemaVersion": 16,
-    "version": 0,
-    "refresh": "25s",
-    "panels": [
-      {
-        "type": "gauge",
-        "title": "CPU Usage",
-        "gridPos": {"x": 0, "y": 0, "w": 6, "h": 6},
-        "targets": [
-          {
-            "expr": "cpu_usage_percent",
-            "legendFormat": "CPU %"
-          }
-        ],
-        "datasource": "Prometheus"
-      },
-      {
-        "type": "gauge",
-        "title": "Memory Usage",
-        "gridPos": {"x": 6, "y": 0, "w": 6, "h": 6},
-        "targets": [
-          {
-            "expr": "memory_usage_bytes / 1024 / 1024",
-            "legendFormat": "Memory (MB)"
-          }
-        ],
-        "datasource": "Prometheus"
-      },
-      {
-        "type": "graph",
-        "title": "System Resources Over Time",
-        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 12},
-        "targets": [
-          {
-            "expr": "cpu_usage_percent",
-            "legendFormat": "CPU %"
-          },
-          {
-            "expr": "memory_usage_bytes / 1024 / 1024",
-            "legendFormat": "Memory (MB)"
-          }
-        ],
-        "datasource": "Prometheus"
-      },
-      {
-        "type": "graph",
-        "title": "Processing Failures",
-        "gridPos": {"x": 0, "y": 6, "w": 12, "h": 6},
-        "targets": [
-          {
-            "expr": "processing_failures_total",
-            "legendFormat": "{{stage}}"
-          }
-        ],
-        "datasource": "Prometheus"
-      },
-      {
-        "type": "graph",
-        "title": "Anomalies Detected",
-        "gridPos": {"x": 0, "y": 12, "w": 24, "h": 6},
-        "targets": [
-          {
-            "expr": "anomalies_detected_total",
-            "legendFormat": "{{type}}"
-          }
-        ],
-        "datasource": "Prometheus"
-      }
-    ]
-  }
+  "id": null,
+  "title": "Legal Pipeline - System Health",
+  "tags": ["legal", "system", "health"],
+  "timezone": "browser",
+  "schemaVersion": 16,
+  "version": 0,
+  "refresh": "25s",
+  "panels": [
+    {
+      "id": 1,
+      "type": "gauge",
+      "title": "CPU Usage",
+      "gridPos": {"x": 0, "y": 0, "w": 6, "h": 6},
+      "targets": [
+        {
+          "expr": "cpu_usage_percent",
+          "legendFormat": "CPU %",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "id": 2,
+      "type": "gauge",
+      "title": "Memory Usage",
+      "gridPos": {"x": 6, "y": 0, "w": 6, "h": 6},
+      "targets": [
+        {
+          "expr": "memory_usage_bytes / 1024 / 1024",
+          "legendFormat": "Memory (MB)",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "id": 3,
+      "type": "graph",
+      "title": "System Resources Over Time",
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 12},
+      "targets": [
+        {
+          "expr": "cpu_usage_percent",
+          "legendFormat": "CPU %",
+          "refId": "A"
+        },
+        {
+          "expr": "memory_usage_bytes / 1024 / 1024",
+          "legendFormat": "Memory (MB)",
+          "refId": "B"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "id": 4,
+      "type": "graph",
+      "title": "Processing Failures",
+      "gridPos": {"x": 0, "y": 6, "w": 12, "h": 6},
+      "targets": [
+        {
+          "expr": "processing_failures_total",
+          "legendFormat": "{{stage}}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "id": 5,
+      "type": "graph",
+      "title": "Anomalies Detected",
+      "gridPos": {"x": 0, "y": 12, "w": 24, "h": 6},
+      "targets": [
+        {
+          "expr": "anomalies_detected_total",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    }
+  ]
 }
