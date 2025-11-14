@@ -6,28 +6,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Legal Semantic Pipeline</title>
   <style>
+    /* ---------------------------
+       🌙 DARK MODE THEME (GitHub)
+       ---------------------------*/
     body {
       font-family: "Segoe UI", sans-serif;
-      background: #f7f7f9;
+      background: #000000;
       margin: 40px;
-      color: #333;
+      color: #e6edf3;
+    }
+
+    .logo-container {
+      text-align: center;
+      margin-bottom: 30px;
     }
 
     h1 {
-      color: #0078d4;
+      color: #1f6feb;
       margin-bottom: 10px;
     }
 
+    h2,
+    h3 {
+      color: #58a6ff;
+    }
+
     section {
-      background: white;
+      background: #161b22;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      border: 1px solid #30363d;
       margin-bottom: 25px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
     }
 
     label {
       font-weight: 600;
+      color: #e6edf3;
     }
 
     input,
@@ -37,13 +52,22 @@
       padding: 10px;
       margin-top: 8px;
       margin-bottom: 12px;
-      border: 1px solid #ccc;
+      border: 1px solid #30363d;
       border-radius: 6px;
+      background: #0d1117;
+      color: #c9d1d9;
       font-size: 15px;
     }
 
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: 2px solid #1f6feb;
+      border-color: #1f6feb;
+    }
+
     button {
-      background-color: #0078d4;
+      background-color: #1f6feb;
       color: white;
       border: none;
       padding: 10px 16px;
@@ -53,27 +77,27 @@
     }
 
     button:hover {
-      background-color: #005ea0;
+      background-color: #388bfd;
     }
 
     .result {
-      background: #f0f0f5;
+      background: #0d1117;
       border-radius: 8px;
       padding: 14px;
       margin-top: 14px;
-      border-left: 6px solid #0078d4;
-      font-family: "Segoe UI", sans-serif;
+      border-left: 6px solid #1f6feb;
+      border: 1px solid #30363d;
     }
 
     .meta-line {
       font-size: 14px;
-      color: #444;
+      color: #c9d1d9;
       margin-top: 4px;
     }
 
     .tag {
       display: inline-block;
-      background: #0078d4;
+      background: #1f6feb;
       color: white;
       border-radius: 4px;
       padding: 2px 6px;
@@ -83,7 +107,7 @@
 
     .model-tag {
       display: inline-block;
-      background: #107c10;
+      background: #238636;
       color: white;
       border-radius: 4px;
       padding: 2px 6px;
@@ -92,73 +116,127 @@
     }
 
     .metadata {
-      background: #272822;
-      color: #f8f8f2;
+      background: #161b22;
+      color: #e6edf3;
       padding: 8px;
       border-radius: 8px;
       margin-top: 8px;
+      border: 1px solid #30363d;
       overflow-x: auto;
       font-size: 13px;
     }
 
     details summary {
       cursor: pointer;
-      color: #0078d4;
+      color: #1f6feb;
       font-weight: bold;
       margin-top: 6px;
     }
 
     pre {
       margin: 0;
+      white-space: pre-wrap;
     }
 
+    /* JSON Highlighting */
     .string {
-      color: #a6e22e;
+      color: #a5d6ff;
     }
 
     .number {
-      color: #ae81ff;
+      color: #d2a8ff;
     }
 
     .boolean {
-      color: #66d9ef;
+      color: #56d364;
     }
 
     .null {
-      color: #f92672;
+      color: #f85149;
     }
 
     .key {
-      color: #fd971f;
+      color: #ffae3f;
     }
 
     .debug-info {
-      background: #fff3cd;
-      border: 1px solid #ffeaa7;
+      background: #2d333b;
+      border: 1px solid #444c56;
       border-radius: 4px;
       padding: 10px;
       margin: 10px 0;
       font-size: 12px;
+      color: #8b949e;
     }
   </style>
 </head>
 
 <body>
+
+  <!-- 🔷 Secure Video (WebM) Instead of Logo -->
+  <div style="text-align:center; margin-bottom:30px;">
+
+    <div style="
+      width:500px;             /* final visible width */
+      height:200px;            /* final visible height */
+      margin:0 auto;
+      overflow:hidden;         /* crops the video */
+      border-radius:12px;      /* optional rounded corners */
+  ">
+      <video src="/static/credarthaUXlogo-alwyn.webm" autoplay muted loop playsinline style="
+        width:100%;
+        height:100%;
+        object-fit:cover;      /* fills container like a background image */
+        object-position:center; /* center the symbol */
+      "></video>
+    </div>
+
+  </div>
+
+  <style>
+    /* Disable right-click save */
+    video {
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    video::-internal-media-controls-download-button {
+      display: none;
+    }
+
+    video::-webkit-media-controls-enclosure {
+      overflow: hidden;
+    }
+
+    video::-webkit-media-controls-panel {
+      width: calc(125% + 30px);
+    }
+  </style>
+
+  <script>
+    document.addEventListener("contextmenu", e => {
+      if (e.target.tagName === "VIDEO") e.preventDefault();
+    });
+  </script>
+
+
+
+
   <h1>⚖️ Legal Semantic Pipeline</h1>
 
-  <!-- Upload PDF Section -->
+  <!-- Upload PDF -->
   <section>
     <h2>📄 Upload Legal PDF</h2>
-    
+
     <label for="modelSelect">🤖 Select Embedding Model:</label>
     <select id="modelSelect">
       <option value="all-MiniLM-L6-v2">all-MiniLM-L6-v2 (Fast, lightweight)</option>
       <option value="all-mpnet-base-v2">all-mpnet-base-v2 (High quality)</option>
     </select>
 
-    <!-- Chunking Configuration Section -->
     <section>
       <h3>⚙️ Chunking Configuration</h3>
+
       <label for="chunkingMethod">Chunking Method:</label>
       <select id="chunkingMethod">
         <option value="semantic">Semantic Chunking</option>
@@ -166,13 +244,13 @@
       </select>
 
       <label for="minChunkSize">Min Chunk Size (chars):</label>
-      <input type="number" id="minChunkSize" value="500" min="100" max="2000">
+      <input type="number" id="minChunkSize" value="500">
 
       <label for="maxChunkSize">Max Chunk Size (chars):</label>
-      <input type="number" id="maxChunkSize" value="4500" min="1000" max="10000">
+      <input type="number" id="maxChunkSize" value="4500">
 
       <label for="chunkOverlap">Chunk Overlap (chars):</label>
-      <input type="number" id="chunkOverlap" value="250" min="0" max="1000">
+      <input type="number" id="chunkOverlap" value="250">
     </section>
 
     <input type="file" id="pdfFile" accept=".pdf" />
@@ -180,11 +258,12 @@
     <p id="uploadStatus"></p>
   </section>
 
-  <!-- Query Twin Section -->
+  <!-- Query -->
   <section>
     <h2>🔍 Query Legal Twin</h2>
+
     <label for="queryText">Enter your query:</label>
-    <textarea id="queryText" rows="8" placeholder="e.g. trademark infringement appeal..."></textarea>
+    <textarea id="queryText" rows="8"></textarea>
 
     <label for="topK">Number of top results:</label>
     <select id="topK">
@@ -199,14 +278,12 @@
   </section>
 
   <script>
-    // ---- PDF Upload ----
     async function uploadPDF() {
       const fileInput = document.getElementById("pdfFile");
       const status = document.getElementById("uploadStatus");
-      const modelSelect = document.getElementById("modelSelect");
-      const selectedModel = modelSelect.value;
-      
-      // Chunking parameters
+      const selectedModel = document.getElementById("modelSelect").value;
+
+      // Chunking Fields
       const chunkingMethod = document.getElementById("chunkingMethod").value;
       const minChunkSize = parseInt(document.getElementById("minChunkSize").value);
       const maxChunkSize = parseInt(document.getElementById("maxChunkSize").value);
@@ -224,14 +301,15 @@
       formData.append("min_chunk_size", minChunkSize);
       formData.append("max_chunk_size", maxChunkSize);
       formData.append("chunk_overlap", chunkOverlap);
-      
-      status.textContent = "Uploading and processing with model: " + selectedModel + " ⏳";
+
+      status.textContent = "Uploading and processing... ⏳";
 
       try {
         const res = await fetch("/api/v1/upload-pdf", { method: "POST", body: formData });
         const data = await res.json();
+
         if (res.ok) {
-          status.textContent = "✅ " + data.message + " (Model: " + selectedModel + ")";
+          status.textContent = "✅ " + data.message;
         } else {
           status.textContent = "❌ Error: " + (data.detail || "Upload failed");
         }
@@ -240,95 +318,90 @@
       }
     }
 
-    // ---- Display Chunking Metadata ----
     function displayChunkingMetadata(metadata) {
-      if (!metadata || Object.keys(metadata).length === 0) {
-        return '<div class="meta-line">No chunking metadata available</div>';
-      }
-      
+      if (!metadata) return "";
+
       return `
         <div class="meta-line">
-          <span class="model-tag">Model: ${metadata.embedding_model || 'N/A'}</span>
-          <span class="model-tag">Method: ${metadata.chunking_method || 'N/A'}</span>
+          <span class="model-tag">Model: ${metadata.embedding_model || ""}</span>
+          <span class="model-tag">Method: ${metadata.chunking_method || ""}</span>
         </div>
         <div class="meta-line">
-          Min Size: ${metadata.min_chunk_size || 'N/A'} |
-          Max Size: ${metadata.max_chunk_size || 'N/A'} |
-          Overlap: ${metadata.chunk_overlap || 'N/A'}
+          Min Size: ${metadata.min_chunk_size} |
+          Max Size: ${metadata.max_chunk_size} |
+          Overlap: ${metadata.chunk_overlap}
         </div>
       `;
     }
 
-    // ---- Query Twin ----
     async function queryTwin() {
       const queryText = document.getElementById("queryText").value.trim();
       const topK = document.getElementById("topK").value;
       const resultsDiv = document.getElementById("queryResults");
 
       if (!queryText) {
-        alert("Please enter a query!");
+        alert("Enter a query!");
         return;
       }
 
-      resultsDiv.innerHTML = "Searching... ⏳";
+      resultsDiv.innerHTML = "Searching...";
 
       try {
         const res = await fetch(`/api/v1/query-twin?query=${encodeURIComponent(queryText)}&top_k=${topK}`);
         const data = await res.json();
 
-        if (res.ok && data.results && data.results.length) {
-          resultsDiv.innerHTML = `<h3>Showing Top ${data.results.length} Results for "<em>${data.query}</em>":</h3>`;
-
-          data.results.forEach((r, i) => {
-            // FIXED: Get type from the correct location - try both root and metadata
-            const chunkType = r.type || (r.metadata && r.metadata.type) || "Legal_Content";
-            const meta = r.metadata || {};
-            const chunkingMeta = r.chunking_metadata || {};
-
-            resultsDiv.innerHTML += `
-              <div class="result">
-                <strong>#${i + 1} (Score: ${r.score.toFixed(4)})</strong><br>
-                <div class="meta-line"><em>Citation:</em> ${r.citation_id || "N/A"}</div>
-                ${displayChunkingMetadata(chunkingMeta)}
-                <div class="meta-line">
-                  <span class="tag">${chunkType}</span>
-                  Confidence: ${(meta.confidence ?? r.confidence ?? 0).toFixed(2)} |
-                  Sentences: ${meta.sentence_count ?? r.sentence_count ?? "?"} |
-                  Chars: ${meta.char_count ?? r.char_count ?? "?"}
-                </div>
-                <div class="meta-line">
-                  ${(meta.has_citations || r.has_citations) ? "📑 Has Citations" : "—"} •
-                  ${(meta.has_statutes || r.has_statutes) ? "⚖️ Has Statutes" : "—"} •
-                  ${(meta.has_parties || r.has_parties) ? "👥 Mentions Parties" : "—"}
-                </div>
-                <p>${r.chunk_text}</p>
-
-                <details>
-                  <summary>📘 View Full Metadata</summary>
-                  <div class="metadata"><pre>${syntaxHighlight(r)}</pre></div>
-                </details>
-              </div>`;
-          });
-        } else {
+        if (!res.ok || !data.results.length) {
           resultsDiv.innerHTML = "No results found.";
+          return;
         }
+
+        resultsDiv.innerHTML = `<h3>Top ${data.results.length} results for: <em>${data.query}</em></h3>`;
+
+        data.results.forEach((r, i) => {
+          const type = r.type || r?.metadata?.type || "Legal_Content";
+
+          resultsDiv.innerHTML += `
+            <div class="result">
+              <strong>#${i + 1} (Score: ${r.score.toFixed(4)})</strong>
+              <div class="meta-line"><em>Citation:</em> ${r.citation_id || "N/A"}</div>
+
+              ${displayChunkingMetadata(r.chunking_metadata)}
+
+              <div class="meta-line">
+                <span class="tag">${type}</span>
+                Confidence: ${(r.confidence || 0).toFixed(2)}
+              </div>
+
+              <p>${r.chunk_text}</p>
+
+              <details>
+                <summary>📘 Full Metadata</summary>
+                <div class="metadata"><pre>${syntaxHighlight(r)}</pre></div>
+              </details>
+            </div>`;
+        });
+
       } catch (err) {
         resultsDiv.innerHTML = "❌ Search failed: " + err.message;
       }
     }
 
-    // ---- Pretty Print JSON Metadata ----
     function syntaxHighlight(json) {
       if (typeof json != 'string') json = JSON.stringify(json, null, 2);
-      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
       return json.replace(
         /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
         match => {
-          let cls = 'number';
-          if (/^"/.test(match)) cls = /:$/.test(match) ? 'key' : 'string';
-          else if (/true|false/.test(match)) cls = 'boolean';
-          else if (/null/.test(match)) cls = 'null';
-          return `<span class="${cls}">${match}</span>`;
+          if (/^"/.test(match)) {
+            return /:$/.test(match)
+              ? `<span class="key">${match}</span>`
+              : `<span class="string">${match}</span>`;
+          } else if (/true|false/.test(match)) {
+            return `<span class="boolean">${match}</span>`;
+          } else if (/null/.test(match)) {
+            return `<span class="null">${match}</span>`;
+          }
+          return `<span class="number">${match}</span>`;
         }
       );
     }
