@@ -1,5 +1,7 @@
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 from functools import lru_cache
+from typing import List, Dict
 
 
 class Settings(BaseSettings):
@@ -63,7 +65,7 @@ class Settings(BaseSettings):
 
     # Environment flags to toggle chunking strategies or experiments
     DEFAULT_CHUNK_STRATEGY: str = "semantic-legal"  # or 'recursive-legal'
-    AVAILABLE_EMBED_MODELS: list[str] = [
+    AVAILABLE_EMBED_MODELS: List[str] = [
         "sentence-transformers/all-MiniLM-L6-v2",
         "sentence-transformers/all-mpnet-base-v2",  # Added mpnet model
         "sentence-transformers/paraphrase-MiniLM-L12-v2",
@@ -73,7 +75,7 @@ class Settings(BaseSettings):
     # ============================================================
     # Model Dimension Mapping (for reference)
     # ============================================================
-    MODEL_DIMENSIONS: dict[str, int] = {
+    MODEL_DIMENSIONS: Dict[str, int] = {
         "sentence-transformers/all-MiniLM-L6-v2": 384,
         "sentence-transformers/all-mpnet-base-v2": 768,
         "sentence-transformers/paraphrase-MiniLM-L12-v2": 384,
@@ -83,27 +85,29 @@ class Settings(BaseSettings):
     # ============================================================
     # Pydantic Environment Configuration
     # ============================================================
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = ConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="allow"  # Allow extra environment variables
+    )
 
 
 # ============================================================
 # 🧠 Model Dimension Mapping (Reverse and Additional)
 # ============================================================
-MODEL_DIMENSIONS_REVERSE: dict[int, str] = {
+MODEL_DIMENSIONS_REVERSE: Dict[int, str] = {
     384: "all-MiniLM-L6-v2",
     768: "all-mpnet-base-v2",
 }
 
-MODEL_NAMES: dict[str, int] = {
+MODEL_NAMES: Dict[str, int] = {
     "all-MiniLM-L6-v2": 384,
     "all-mpnet-base-v2": 768,
     "paraphrase-MiniLM-L12-v2": 384,
     "multi-qa-MiniLM-L6-cos-v1": 384,
 }
 
-AVAILABLE_MODELS: dict[str, dict] = {
+AVAILABLE_MODELS: Dict[str, Dict] = {
     "all-MiniLM-L6-v2": {
         "name": "all-MiniLM-L6-v2",
         "description": "Fast, lightweight (384 dims)",
