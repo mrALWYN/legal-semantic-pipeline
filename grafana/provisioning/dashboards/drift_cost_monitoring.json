@@ -1,0 +1,156 @@
+{
+  "id": null,
+  "title": "Legal Pipeline - Drift & Cost Monitoring",
+  "tags": ["legal", "drift", "cost", "monitoring"],
+  "timezone": "browser",
+  "schemaVersion": 16,
+  "version": 0,
+  "refresh": "25s",
+  "panels": [
+    {
+      "id": 1,
+      "type": "graph",
+      "title": "Document Length Distribution Over Time",
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "document_length_chars_bucket",
+          "legendFormat": "{{le}} chars",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "id": 2,
+      "type": "graph",
+      "title": "Embedding Drift Score",
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "embedding_drift_score_bucket",
+          "legendFormat": "Drift Score",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Total Compute Cost ($)",
+      "gridPos": {"x": 0, "y": 8, "w": 6, "h": 4},
+      "targets": [
+        {
+          "expr": "embedding_compute_cost_total",
+          "legendFormat": "Compute Cost",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Total Storage Cost ($)",
+      "gridPos": {"x": 6, "y": 8, "w": 6, "h": 4},
+      "targets": [
+        {
+          "expr": "storage_cost_total",
+          "legendFormat": "Storage Cost",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Total API Usage Cost ($)",
+      "gridPos": {"x": 12, "y": 8, "w": 6, "h": 4},
+      "targets": [
+        {
+          "expr": "api_usage_cost_total",
+          "legendFormat": "API Cost",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Vector Index Size (GB)",
+      "gridPos": {"x": 18, "y": 8, "w": 6, "h": 4},
+      "targets": [
+        {
+          "expr": "vector_index_size_bytes / (1024 * 1024 * 1024)",
+          "legendFormat": "Index Size (GB)",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "id": 7,
+      "type": "graph",
+      "title": "Qdrant Points Count",
+      "gridPos": {"x": 0, "y": 12, "w": 12, "h": 6},
+      "targets": [
+        {
+          "expr": "qdrant_points_total",
+          "legendFormat": "Points Count",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "id": 8,
+      "type": "graph",
+      "title": "Retraining Triggers",
+      "gridPos": {"x": 12, "y": 12, "w": 12, "h": 6},
+      "targets": [
+        {
+          "expr": "increase(retraining_triggered_total[1h])",
+          "legendFormat": "Retraining Events",
+          "refId": "A"
+        },
+        {
+          "expr": "increase(drift_detected_total[1h])",
+          "legendFormat": "Drift Events",
+          "refId": "B"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "id": 9,
+      "type": "graph",
+      "title": "Language Complexity Distribution",
+      "gridPos": {"x": 0, "y": 18, "w": 12, "h": 6},
+      "targets": [
+        {
+          "expr": "language_complexity_score_bucket",
+          "legendFormat": "Complexity {{le}}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Current Vector Index Size",
+      "gridPos": {"x": 12, "y": 18, "w": 12, "h": 3},
+      "targets": [
+        {
+          "expr": "vector_index_size_bytes",
+          "legendFormat": "Bytes",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus"
+    }
+  ]
+}

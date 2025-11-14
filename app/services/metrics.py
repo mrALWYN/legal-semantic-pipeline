@@ -152,6 +152,79 @@ feedback_ratings = Histogram(
 )
 
 # ============================================================
+# 🔄 Data Drift Detection Metrics
+# ============================================================
+document_length_distribution = Histogram(
+    "document_length_chars",
+    "Distribution of input document lengths in characters",
+    buckets=[1000, 5000, 10000, 50000, 100000, 500000],
+    registry=registry,
+)
+
+embedding_drift_score = Histogram(
+    "embedding_drift_score",
+    "Embedding distribution drift scores",
+    buckets=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+    registry=registry,
+)
+
+language_complexity_score = Histogram(
+    "language_complexity_score",
+    "Document language complexity scores",
+    buckets=[0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+    registry=registry,
+)
+
+# ============================================================
+# 💰 Cost & Resource Tracking Metrics
+# ============================================================
+embedding_compute_cost = Counter(
+    "embedding_compute_cost_total",
+    "Total embedding compute cost (USD)",
+    registry=registry,
+)
+
+storage_cost = Counter(
+    "storage_cost_total",
+    "Total storage cost (USD)",
+    registry=registry,
+)
+
+vector_index_size_bytes = Gauge(
+    "vector_index_size_bytes",
+    "Current vector index size in bytes",
+    registry=registry,
+)
+
+api_usage_cost = Counter(
+    "api_usage_cost_total",
+    "Total API usage cost (USD)",
+    registry=registry,
+)
+
+qdrant_points_count = Gauge(
+    "qdrant_points_total",
+    "Total number of points in Qdrant",
+    registry=registry,
+)
+
+# ============================================================
+# 🏗️ Retraining Trigger Metrics
+# ============================================================
+drift_detected = Counter(
+    "drift_detected_total",
+    "Total drift detection events",
+    ["type"],
+    registry=registry,
+)
+
+retraining_triggered = Counter(
+    "retraining_triggered_total",
+    "Total retraining trigger events",
+    registry=registry,
+)
+
+# ============================================================
 # 📦 Export Utility
 # ============================================================
 def prometheus_metrics():

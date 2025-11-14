@@ -19,13 +19,16 @@ from app.core.config import settings
 from app.services.metrics import (
     embedding_time_hist,
     storage_time_hist,
-    memory_usage_bytes,  # Changed from current_memory to memory_usage_bytes
+    memory_usage_bytes,
     ingest_chunks,
     search_duration_hist,
     search_results,
     processing_failures,
-    embedding_similarity
+    embedding_similarity,
+    vector_index_size_bytes,
+    qdrant_points_count
 )
+from app.services.drift_detection import drift_detector
 
 logger = logging.getLogger(__name__)
 
@@ -223,8 +226,33 @@ class VectorStoreService:
             # Update metrics
             try:
                 embedding_time_hist.observe(embedding_time)
-                memory_usage_bytes.set(peak)  # Changed from current_memory to memory_usage_bytes
+                memory_usage_bytes.set(peak)
                 ingest_chunks.inc(total_points)
+                
+                # Calculate and track costs
+                try:
+                    # Get current points count for cost calculation
+                    try:
+                        count_result = self.client.count(self.collection_name)
+                        points_count = count_result.count if count_result else total_points
+                    except:
+                        points_count = total_points
+                    
+                    # Calculate and track costs
+                    drift_detector.calculate_cost_metrics(
+                        embedding_time=embedding_time,
+                        document_length=sum(len(c.get("text", "")) for c in chunks),
+                        points_count=points_count,
+                        model_name=self.model_name
+                    )
+                    
+                    # Update vector index size and points count metrics
+                    vector_index_size_bytes.set(points_count * self.embedding_dim * 4)  # Approximate size
+                    qdrant_points_count.set(points_count)
+                    
+                except Exception as cost_err:
+                    logger.warning(f"[COST] Failed to track costs: {cost_err}")
+                    
             except Exception as metric_err:
                 logger.warning(f"[METRICS] Failed to record metrics: {metric_err}")
 
@@ -272,6 +300,12 @@ class VectorStoreService:
                 count_result = self.client.count(self.collection_name)
                 points_count = count_result.count if count_result else "unknown"
                 logger.info(f"[QDRANT] ✅ Total points in collection: {points_count}")
+                
+                # Update metrics
+                if isinstance(points_count, int):
+                    qdrant_points_count.set(points_count)
+                    vector_index_size_bytes.set(points_count * self.embedding_dim * 4)  # Approximate size
+                    
             except Exception as e:
                 logger.warning(f"[QDRANT] ⚠️ Could not verify points count: {e}")
                 points_count = "unknown"
@@ -381,11 +415,18 @@ class VectorStoreService:
                 return {"error": "Collection does not exist"}
                 
             info = self.client.get_collection(self.collection_name)
+            
+            # Update metrics with current collection info
+            points_count = getattr(info, 'points_count', 0)
+            if points_count:
+                qdrant_points_count.set(points_count)
+                vector_index_size_bytes.set(points_count * self.embedding_dim * 4)  # Approximate size
+                
             return {
                 "name": self.collection_name,
                 "vector_size": getattr(info.config.params.vectors, 'size', 0),
                 "distance": getattr(info.config.params.vectors, 'distance', 'unknown'),
-                "points_count": getattr(info, 'points_count', 0),
+                "points_count": points_count,
                 "status": getattr(info, 'status', 'unknown'),
                 "embedding_model": self.model_name,
                 "embedding_dim": self.embedding_dim,

@@ -6,6 +6,7 @@ import warnings
 from typing import List, Dict
 from collections import Counter
 from dataclasses import dataclass
+import numpy as np
 
 # ✅ Correct imports
 from langchain_experimental.text_splitter import SemanticChunker
@@ -17,11 +18,14 @@ from app.services.metrics import (
     embedding_time_hist,
     chunk_size_distribution,
     anomalies_detected,
-    processing_failures
+    processing_failures,
+    document_length_distribution,
+    language_complexity_score
 )
 from app.services.mlflow_service import (
     start_run, log_model_metadata, log_metrics, log_params, end_run
 )
+from app.services.drift_detection import drift_detector
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -233,6 +237,10 @@ class SemanticLegalChunker:
             processing_failures.labels(stage="chunking_input_validation").inc()
             return []
 
+        # Monitor document characteristics for drift detection
+        drift_detector.monitor_document_characteristics(text, document_id)
+        document_length_distribution.observe(len(text))
+
         # Step 1: Perform semantic splitting
         logger.info(f"[CHUNKER] 📝 Step 1/3: Semantic splitting...")
         chunk_start_time = time.time()
@@ -341,6 +349,7 @@ class SemanticLegalChunker:
                     "chunk_time": chunk_time,
                     "classification_time": classification_time,
                     "avg_chunk_size": avg_size,
+                    "document_length": len(text),
                 })
                 
                 # Log type distribution as metrics
@@ -455,6 +464,10 @@ class RecursiveChunker:
             processing_failures.labels(stage="chunking_input_validation").inc()
             return []
 
+        # Monitor document characteristics for drift detection
+        drift_detector.monitor_document_characteristics(text, document_id)
+        document_length_distribution.observe(len(text))
+
         # Step 1: Recursive splitting
         logger.info(f"[CHUNKER] 📝 Step 1/3: Recursive splitting...")
         chunk_start_time = time.time()
@@ -561,6 +574,7 @@ class RecursiveChunker:
                     "chunk_time": chunk_time,
                     "classification_time": classification_time,
                     "avg_chunk_size": avg_size,
+                    "document_length": len(text),
                 })
                 
                 # Log type distribution as metrics

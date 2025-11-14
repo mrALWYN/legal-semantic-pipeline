@@ -159,6 +159,53 @@ def log_artifact(local_path: str, artifact_path: Optional[str] = None):
         logger.warning(f"⚠️ Failed to log artifact {local_path}: {e}")
 
 
+def log_drift_metrics(drift_scores: Dict[str, float], document_stats: Dict):
+    """
+    Log drift detection metrics to MLflow.
+    
+    Args:
+        drift_scores: Dictionary of drift scores by metric type
+        document_stats: Document statistics
+    """
+    try:
+        run = start_run(experiment_name="drift_detection")
+        if run:
+            # Log drift scores
+            metrics_to_log = {}
+            for metric_type, score in drift_scores.items():
+                metrics_to_log[f"drift_{metric_type}"] = score
+            
+            # Add document stats
+            metrics_to_log.update(document_stats)
+            
+            log_metrics(metrics_to_log)
+            end_run()
+            
+            logger.info(f"[MLFLOW] Logged drift metrics: {list(drift_scores.keys())}")
+            
+    except Exception as e:
+        logger.warning(f"[MLFLOW] Failed to log drift metrics: {e}")
+
+
+def log_cost_metrics(cost_metrics: Dict[str, float]):
+    """
+    Log cost tracking metrics to MLflow.
+    
+    Args:
+        cost_metrics: Dictionary of cost metrics
+    """
+    try:
+        run = start_run(experiment_name="cost_tracking")
+        if run:
+            log_metrics(cost_metrics)
+            end_run()
+            
+            logger.info(f"[MLFLOW] Logged cost metrics: {list(cost_metrics.keys())}")
+            
+    except Exception as e:
+        logger.warning(f"[MLFLOW] Failed to log cost metrics: {e}")
+
+
 # ============================================================
 # 🏷️ Model Registry Functions
 # ============================================================
