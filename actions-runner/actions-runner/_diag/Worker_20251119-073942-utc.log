@@ -1,0 +1,3033 @@
+[2025-11-19 07:39:42Z INFO HostContext] No proxy settings were found based on environmental variables (http_proxy/https_proxy/HTTP_PROXY/HTTPS_PROXY)
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known config file 'Credentials': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.credentials'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known config file 'Runner': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.runner'
+[2025-11-19 07:39:42Z INFO Worker] Version: 2.329.0
+[2025-11-19 07:39:42Z INFO Worker] Commit: c76c59996c8fa32e989164a5a695efb12608ae5a
+[2025-11-19 07:39:42Z INFO Worker] Culture: en-US
+[2025-11-19 07:39:42Z INFO Worker] UI Culture: en-US
+[2025-11-19 07:39:42Z INFO Worker] Waiting to receive the job message from the channel.
+[2025-11-19 07:39:42Z INFO ProcessChannel] Receiving message of length 19338, with hash '9c987593652346443410660f8b7c8184fbe0b84e31774880f97e64a07f82ab87'
+[2025-11-19 07:39:42Z INFO Worker] Message received.
+[2025-11-19 07:39:42Z INFO Worker] Job message:
+ {
+  "fileTable": [
+    ".github/workflows/ci-cd.yml"
+  ],
+  "mask": [
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    },
+    {
+      "type": "regex",
+      "value": "***"
+    }
+  ],
+  "steps": [
+    {
+      "type": "action",
+      "reference": {
+        "type": "repository",
+        "name": "actions/checkout",
+        "ref": "v3",
+        "repositoryType": "GitHub"
+      },
+      "displayNameToken": {
+        "type": 0,
+        "file": 1,
+        "line": 80,
+        "col": 15,
+        "lit": "Checkout code"
+      },
+      "contextName": "__actions_checkout",
+      "condition": "success()",
+      "id": "1629293c-3d90-4c86-b3e3-8ce4cdf277c9",
+      "name": "__actions_checkout"
+    },
+    {
+      "type": "action",
+      "reference": {
+        "type": "script"
+      },
+      "displayNameToken": {
+        "type": 0,
+        "file": 1,
+        "line": 83,
+        "col": 15,
+        "lit": "Deploy to local staging"
+      },
+      "contextName": "__run",
+      "inputs": {
+        "type": 2,
+        "map": [
+          {
+            "key": "script",
+            "value": {
+              "type": 0,
+              "file": 1,
+              "line": 84,
+              "col": 14,
+              "lit": "echo \"Deploying to local staging environment...\"\ndocker-compose down\ndocker-compose pull\ndocker-compose up -d\n"
+            }
+          }
+        ]
+      },
+      "condition": "success()",
+      "id": "992840f9-4a33-4508-b657-fd29d73cc287",
+      "name": "__run"
+    }
+  ],
+  "variables": {
+    "Actions.EnableHttpRedirects": {
+      "value": "true"
+    },
+    "DistributedTask.AddWarningToNode12Action": {
+      "value": "true"
+    },
+    "DistributedTask.AddWarningToNode16Action": {
+      "value": "true"
+    },
+    "DistributedTask.AllowRunnerContainerHooks": {
+      "value": "true"
+    },
+    "DistributedTask.DeprecateStepOutputCommands": {
+      "value": "true"
+    },
+    "DistributedTask.DetailUntarFailure": {
+      "value": "true"
+    },
+    "DistributedTask.EnableCompositeActions": {
+      "value": "true"
+    },
+    "DistributedTask.EnableJobServerQueueTelemetry": {
+      "value": "true"
+    },
+    "DistributedTask.EnhancedAnnotations": {
+      "value": "true"
+    },
+    "DistributedTask.ForceGithubJavascriptActionsToNode16": {
+      "value": "true"
+    },
+    "DistributedTask.ForceGithubJavascriptActionsToNode20": {
+      "value": "true"
+    },
+    "DistributedTask.LogTemplateErrorsAsDebugMessages": {
+      "value": "true"
+    },
+    "DistributedTask.MarkJobAsFailedOnWorkerCrash": {
+      "value": "true"
+    },
+    "DistributedTask.NewActionMetadata": {
+      "value": "true"
+    },
+    "DistributedTask.UploadStepSummary": {
+      "value": "true"
+    },
+    "DistributedTask.UseActionArchiveCache": {
+      "value": "true"
+    },
+    "DistributedTask.UseWhich2": {
+      "value": "true"
+    },
+    "RunService.FixEmbeddedIssues": {
+      "value": "true"
+    },
+    "actions_add_check_run_id_to_job_context": {
+      "value": "true"
+    },
+    "actions_container_action_runner_temp": {
+      "value": "false"
+    },
+    "actions_display_helpful_actions_download_errors": {
+      "value": "true"
+    },
+    "actions_skip_retry_complete_job_upon_known_errors": {
+      "value": "true"
+    },
+    "actions_uses_cache_service_v2": {
+      "value": "true"
+    },
+    "github_token": {
+      "value": "***",
+      "isSecret": true
+    },
+    "system.from_run_service": {
+      "value": "true"
+    },
+    "system.github.job": {
+      "value": "deploy-staging"
+    },
+    "system.github.launch_endpoint": {
+      "value": "https://launch.actions.githubusercontent.com"
+    },
+    "system.github.results_endpoint": {
+      "value": "https://results-receiver.actions.githubusercontent.com/"
+    },
+    "system.github.results_upload_with_sdk": {
+      "value": "true"
+    },
+    "system.github.token": {
+      "value": "***",
+      "isSecret": true
+    },
+    "system.github.token.permissions": {
+      "value": "{\"Contents\":\"read\",\"Metadata\":\"read\",\"Packages\":\"read\"}"
+    },
+    "system.orchestrationId": {
+      "value": "4debe5a9-7be7-4e22-9942-272bf613db47.deploy-staging.__default"
+    },
+    "system.phaseDisplayName": {
+      "value": "deploy-staging"
+    },
+    "system.runner.lowdiskspacethreshold": {
+      "value": "100"
+    },
+    "system.runnerEnvironment": {
+      "value": "self-hosted"
+    },
+    "system.runnerGroupName": {
+      "value": "Default"
+    }
+  },
+  "messageType": "RunnerJobRequest",
+  "plan": {
+    "scopeIdentifier": "00000000-0000-0000-0000-000000000000",
+    "planType": "actions",
+    "version": 0,
+    "planId": "4debe5a9-7be7-4e22-9942-272bf613db47",
+    "planGroup": null,
+    "artifactUri": null,
+    "artifactLocation": null,
+    "definition": null,
+    "owner": null
+  },
+  "timeline": {
+    "id": "4debe5a9-7be7-4e22-9942-272bf613db47",
+    "changeId": 0,
+    "location": null
+  },
+  "jobId": "cab35e3a-79d5-51d2-a705-13a8266a1076",
+  "jobDisplayName": "deploy-staging",
+  "jobName": "__default",
+  "requestId": 0,
+  "lockedUntil": "0001-01-01T00:00:00",
+  "resources": {
+    "endpoints": [
+      {
+        "data": {
+          "ServerId": "",
+          "ServerName": "",
+          "CacheServerUrl": "https://artifactcache.actions.githubusercontent.com/c27bEMeq8lsDTrcVsR5z0bx6NvtyGJBeQXy4Jfd7Eoe4aM95UG/",
+          "FeedStreamUrl": "wss://results-receiver.actions.githubusercontent.com/_ws/ingest.sock",
+          "ResultsServiceUrl": "https://results-receiver.actions.githubusercontent.com/",
+          "PipelinesServiceUrl": "https://pipelinesghubeus25.actions.githubusercontent.com/c27bEMeq8lsDTrcVsR5z0bx6NvtyGJBeQXy4Jfd7Eoe4aM95UG/",
+          "GenerateIdTokenUrl": ""
+        },
+        "name": "SystemVssConnection",
+        "url": "https://run-actions-3-azure-eastus.actions.githubusercontent.com/50/",
+        "authorization": {
+          "parameters": {
+            "AccessToken": "***"
+          },
+          "scheme": "OAuth"
+        },
+        "isShared": false,
+        "isReady": true
+      }
+    ]
+  },
+  "contextData": {
+    "github": {
+      "t": 2,
+      "d": [
+        {
+          "k": "ref",
+          "v": "refs/heads/master"
+        },
+        {
+          "k": "sha",
+          "v": "fc0f2a9c00f6201998673f4b9408d7e0462ecf94"
+        },
+        {
+          "k": "repository",
+          "v": "mrALWYN/legal-semantic-pipeline"
+        },
+        {
+          "k": "repository_owner",
+          "v": "mrALWYN"
+        },
+        {
+          "k": "repository_owner_id",
+          "v": "118893084"
+        },
+        {
+          "k": "repositoryUrl",
+          "v": "git://github.com/mrALWYN/legal-semantic-pipeline.git"
+        },
+        {
+          "k": "run_id",
+          "v": "19412039215"
+        },
+        {
+          "k": "run_number",
+          "v": "11"
+        },
+        {
+          "k": "retention_days",
+          "v": "90"
+        },
+        {
+          "k": "run_attempt",
+          "v": "2"
+        },
+        {
+          "k": "artifact_cache_size_limit",
+          "v": "10"
+        },
+        {
+          "k": "repository_visibility",
+          "v": "public"
+        },
+        {
+          "k": "actor_id",
+          "v": "118893084"
+        },
+        {
+          "k": "actor",
+          "v": "mrALWYN"
+        },
+        {
+          "k": "workflow",
+          "v": "CI/CD Pipeline"
+        },
+        {
+          "k": "head_ref",
+          "v": ""
+        },
+        {
+          "k": "base_ref",
+          "v": ""
+        },
+        {
+          "k": "event_name",
+          "v": "push"
+        },
+        {
+          "k": "server_url",
+          "v": "https://github.com"
+        },
+        {
+          "k": "api_url",
+          "v": "https://api.github.com"
+        },
+        {
+          "k": "graphql_url",
+          "v": "https://api.github.com/graphql"
+        },
+        {
+          "k": "ref_name",
+          "v": "master"
+        },
+        {
+          "k": "ref_protected",
+          "v": false
+        },
+        {
+          "k": "ref_type",
+          "v": "branch"
+        },
+        {
+          "k": "secret_source",
+          "v": "Actions"
+        },
+        {
+          "k": "event",
+          "v": {
+            "t": 2,
+            "d": [
+              {
+                "k": "after",
+                "v": "fc0f2a9c00f6201998673f4b9408d7e0462ecf94"
+              },
+              {
+                "k": "base_ref",
+                "v": null
+              },
+              {
+                "k": "before",
+                "v": "13d057967fdbad0b624535df7bfc01a0da637a17"
+              },
+              {
+                "k": "commits",
+                "v": {
+                  "t": 1,
+                  "a": [
+                    {
+                      "t": 2,
+                      "d": [
+                        {
+                          "k": "author",
+                          "v": {
+                            "t": 2,
+                            "d": [
+                              {
+                                "k": "email",
+                                "v": "alwynantonyben@gmail.com"
+                              },
+                              {
+                                "k": "name",
+                                "v": "mrALWYN"
+                              },
+                              {
+                                "k": "username",
+                                "v": "mrALWYN"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "k": "committer",
+                          "v": {
+                            "t": 2,
+                            "d": [
+                              {
+                                "k": "email",
+                                "v": "alwynantonyben@gmail.com"
+                              },
+                              {
+                                "k": "name",
+                                "v": "mrALWYN"
+                              },
+                              {
+                                "k": "username",
+                                "v": "mrALWYN"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "k": "distinct",
+                          "v": true
+                        },
+                        {
+                          "k": "id",
+                          "v": "fc0f2a9c00f6201998673f4b9408d7e0462ecf94"
+                        },
+                        {
+                          "k": "message",
+                          "v": "edited ReadMe"
+                        },
+                        {
+                          "k": "timestamp",
+                          "v": "2025-11-17T02:35:28+05:30"
+                        },
+                        {
+                          "k": "tree_id",
+                          "v": "5e66114200f4c1e4e3480f9f86c78d1e3a7511be"
+                        },
+                        {
+                          "k": "url",
+                          "v": "https://github.com/mrALWYN/legal-semantic-pipeline/commit/fc0f2a9c00f6201998673f4b9408d7e0462ecf94"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "k": "compare",
+                "v": "https://github.com/mrALWYN/legal-semantic-pipeline/compare/13d057967fdb...fc0f2a9c00f6"
+              },
+              {
+                "k": "created",
+                "v": false
+              },
+              {
+                "k": "deleted",
+                "v": false
+              },
+              {
+                "k": "forced",
+                "v": false
+              },
+              {
+                "k": "head_commit",
+                "v": {
+                  "t": 2,
+                  "d": [
+                    {
+                      "k": "author",
+                      "v": {
+                        "t": 2,
+                        "d": [
+                          {
+                            "k": "email",
+                            "v": "alwynantonyben@gmail.com"
+                          },
+                          {
+                            "k": "name",
+                            "v": "mrALWYN"
+                          },
+                          {
+                            "k": "username",
+                            "v": "mrALWYN"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "k": "committer",
+                      "v": {
+                        "t": 2,
+                        "d": [
+                          {
+                            "k": "email",
+                            "v": "alwynantonyben@gmail.com"
+                          },
+                          {
+                            "k": "name",
+                            "v": "mrALWYN"
+                          },
+                          {
+                            "k": "username",
+                            "v": "mrALWYN"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "k": "distinct",
+                      "v": true
+                    },
+                    {
+                      "k": "id",
+                      "v": "fc0f2a9c00f6201998673f4b9408d7e0462ecf94"
+                    },
+                    {
+                      "k": "message",
+                      "v": "edited ReadMe"
+                    },
+                    {
+                      "k": "timestamp",
+                      "v": "2025-11-17T02:35:28+05:30"
+                    },
+                    {
+                      "k": "tree_id",
+                      "v": "5e66114200f4c1e4e3480f9f86c78d1e3a7511be"
+                    },
+                    {
+                      "k": "url",
+                      "v": "https://github.com/mrALWYN/legal-semantic-pipeline/commit/fc0f2a9c00f6201998673f4b9408d7e0462ecf94"
+                    }
+                  ]
+                }
+              },
+              {
+                "k": "pusher",
+                "v": {
+                  "t": 2,
+                  "d": [
+                    {
+                      "k": "email",
+                      "v": "118893084+mrALWYN@users.noreply.github.com"
+                    },
+                    {
+                      "k": "name",
+                      "v": "mrALWYN"
+                    }
+                  ]
+                }
+              },
+              {
+                "k": "ref",
+                "v": "refs/heads/master"
+              },
+              {
+                "k": "repository",
+                "v": {
+                  "t": 2,
+                  "d": [
+                    {
+                      "k": "allow_forking",
+                      "v": true
+                    },
+                    {
+                      "k": "archive_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/{archive_format}{/ref}"
+                    },
+                    {
+                      "k": "archived",
+                      "v": false
+                    },
+                    {
+                      "k": "assignees_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/assignees{/user}"
+                    },
+                    {
+                      "k": "blobs_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/git/blobs{/sha}"
+                    },
+                    {
+                      "k": "branches_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/branches{/branch}"
+                    },
+                    {
+                      "k": "clone_url",
+                      "v": "https://github.com/mrALWYN/legal-semantic-pipeline.git"
+                    },
+                    {
+                      "k": "collaborators_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/collaborators{/collaborator}"
+                    },
+                    {
+                      "k": "comments_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/comments{/number}"
+                    },
+                    {
+                      "k": "commits_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/commits{/sha}"
+                    },
+                    {
+                      "k": "compare_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/compare/{base}...{head}"
+                    },
+                    {
+                      "k": "contents_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/contents/{+path}"
+                    },
+                    {
+                      "k": "contributors_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/contributors"
+                    },
+                    {
+                      "k": "created_at",
+                      "v": 1762806184.0
+                    },
+                    {
+                      "k": "default_branch",
+                      "v": "master"
+                    },
+                    {
+                      "k": "deployments_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/deployments"
+                    },
+                    {
+                      "k": "description",
+                      "v": null
+                    },
+                    {
+                      "k": "disabled",
+                      "v": false
+                    },
+                    {
+                      "k": "downloads_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/downloads"
+                    },
+                    {
+                      "k": "events_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/events"
+                    },
+                    {
+                      "k": "fork",
+                      "v": false
+                    },
+                    {
+                      "k": "forks",
+                      "v": 0.0
+                    },
+                    {
+                      "k": "forks_count",
+                      "v": 0.0
+                    },
+                    {
+                      "k": "forks_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/forks"
+                    },
+                    {
+                      "k": "full_name",
+                      "v": "mrALWYN/legal-semantic-pipeline"
+                    },
+                    {
+                      "k": "git_commits_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/git/commits{/sha}"
+                    },
+                    {
+                      "k": "git_refs_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/git/refs{/sha}"
+                    },
+                    {
+                      "k": "git_tags_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/git/tags{/sha}"
+                    },
+                    {
+                      "k": "git_url",
+                      "v": "git://github.com/mrALWYN/legal-semantic-pipeline.git"
+                    },
+                    {
+                      "k": "has_discussions",
+                      "v": false
+                    },
+                    {
+                      "k": "has_downloads",
+                      "v": true
+                    },
+                    {
+                      "k": "has_issues",
+                      "v": true
+                    },
+                    {
+                      "k": "has_pages",
+                      "v": false
+                    },
+                    {
+                      "k": "has_projects",
+                      "v": true
+                    },
+                    {
+                      "k": "has_wiki",
+                      "v": true
+                    },
+                    {
+                      "k": "homepage",
+                      "v": null
+                    },
+                    {
+                      "k": "hooks_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/hooks"
+                    },
+                    {
+                      "k": "html_url",
+                      "v": "https://github.com/mrALWYN/legal-semantic-pipeline"
+                    },
+                    {
+                      "k": "id",
+                      "v": 1093772086.0
+                    },
+                    {
+                      "k": "is_template",
+                      "v": false
+                    },
+                    {
+                      "k": "issue_comment_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/issues/comments{/number}"
+                    },
+                    {
+                      "k": "issue_events_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/issues/events{/number}"
+                    },
+                    {
+                      "k": "issues_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/issues{/number}"
+                    },
+                    {
+                      "k": "keys_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/keys{/key_id}"
+                    },
+                    {
+                      "k": "labels_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/labels{/name}"
+                    },
+                    {
+                      "k": "language",
+                      "v": "Python"
+                    },
+                    {
+                      "k": "languages_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/languages"
+                    },
+                    {
+                      "k": "license",
+                      "v": null
+                    },
+                    {
+                      "k": "master_branch",
+                      "v": "master"
+                    },
+                    {
+                      "k": "merges_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/merges"
+                    },
+                    {
+                      "k": "milestones_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/milestones{/number}"
+                    },
+                    {
+                      "k": "mirror_url",
+                      "v": null
+                    },
+                    {
+                      "k": "name",
+                      "v": "legal-semantic-pipeline"
+                    },
+                    {
+                      "k": "node_id",
+                      "v": "R_kgDOQTGjNg"
+                    },
+                    {
+                      "k": "notifications_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/notifications{?since,all,participating}"
+                    },
+                    {
+                      "k": "open_issues",
+                      "v": 0.0
+                    },
+                    {
+                      "k": "open_issues_count",
+                      "v": 0.0
+                    },
+                    {
+                      "k": "owner",
+                      "v": {
+                        "t": 2,
+                        "d": [
+                          {
+                            "k": "avatar_url",
+                            "v": "https://avatars.githubusercontent.com/u/118893084?v=4"
+                          },
+                          {
+                            "k": "email",
+                            "v": "118893084+mrALWYN@users.noreply.github.com"
+                          },
+                          {
+                            "k": "events_url",
+                            "v": "https://api.github.com/users/mrALWYN/events{/privacy}"
+                          },
+                          {
+                            "k": "followers_url",
+                            "v": "https://api.github.com/users/mrALWYN/followers"
+                          },
+                          {
+                            "k": "following_url",
+                            "v": "https://api.github.com/users/mrALWYN/following{/other_user}"
+                          },
+                          {
+                            "k": "gists_url",
+                            "v": "https://api.github.com/users/mrALWYN/gists{/gist_id}"
+                          },
+                          {
+                            "k": "gravatar_id",
+                            "v": ""
+                          },
+                          {
+                            "k": "html_url",
+                            "v": "https://github.com/mrALWYN"
+                          },
+                          {
+                            "k": "id",
+                            "v": 118893084.0
+                          },
+                          {
+                            "k": "login",
+                            "v": "mrALWYN"
+                          },
+                          {
+                            "k": "name",
+                            "v": "mrALWYN"
+                          },
+                          {
+                            "k": "node_id",
+                            "v": "U_kgDOBxYqHA"
+                          },
+                          {
+                            "k": "organizations_url",
+                            "v": "https://api.github.com/users/mrALWYN/orgs"
+                          },
+                          {
+                            "k": "received_events_url",
+                            "v": "https://api.github.com/users/mrALWYN/received_events"
+                          },
+                          {
+                            "k": "repos_url",
+                            "v": "https://api.github.com/users/mrALWYN/repos"
+                          },
+                          {
+                            "k": "site_admin",
+                            "v": false
+                          },
+                          {
+                            "k": "starred_url",
+                            "v": "https://api.github.com/users/mrALWYN/starred{/owner}{/repo}"
+                          },
+                          {
+                            "k": "subscriptions_url",
+                            "v": "https://api.github.com/users/mrALWYN/subscriptions"
+                          },
+                          {
+                            "k": "type",
+                            "v": "User"
+                          },
+                          {
+                            "k": "url",
+                            "v": "https://api.github.com/users/mrALWYN"
+                          },
+                          {
+                            "k": "user_view_type",
+                            "v": "public"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "k": "private",
+                      "v": false
+                    },
+                    {
+                      "k": "pulls_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/pulls{/number}"
+                    },
+                    {
+                      "k": "pushed_at",
+                      "v": 1763327149.0
+                    },
+                    {
+                      "k": "releases_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/releases{/id}"
+                    },
+                    {
+                      "k": "size",
+                      "v": 3920.0
+                    },
+                    {
+                      "k": "ssh_url",
+                      "v": "git@github.com:mrALWYN/legal-semantic-pipeline.git"
+                    },
+                    {
+                      "k": "stargazers",
+                      "v": 0.0
+                    },
+                    {
+                      "k": "stargazers_count",
+                      "v": 0.0
+                    },
+                    {
+                      "k": "stargazers_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/stargazers"
+                    },
+                    {
+                      "k": "statuses_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/statuses/{sha}"
+                    },
+                    {
+                      "k": "subscribers_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/subscribers"
+                    },
+                    {
+                      "k": "subscription_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/subscription"
+                    },
+                    {
+                      "k": "svn_url",
+                      "v": "https://github.com/mrALWYN/legal-semantic-pipeline"
+                    },
+                    {
+                      "k": "tags_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/tags"
+                    },
+                    {
+                      "k": "teams_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/teams"
+                    },
+                    {
+                      "k": "topics",
+                      "v": {
+                        "t": 1
+                      }
+                    },
+                    {
+                      "k": "trees_url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline/git/trees{/sha}"
+                    },
+                    {
+                      "k": "updated_at",
+                      "v": "2025-11-16T20:52:23Z"
+                    },
+                    {
+                      "k": "url",
+                      "v": "https://api.github.com/repos/mrALWYN/legal-semantic-pipeline"
+                    },
+                    {
+                      "k": "visibility",
+                      "v": "public"
+                    },
+                    {
+                      "k": "watchers",
+                      "v": 0.0
+                    },
+                    {
+                      "k": "watchers_count",
+                      "v": 0.0
+                    },
+                    {
+                      "k": "web_commit_signoff_required",
+                      "v": false
+                    }
+                  ]
+                }
+              },
+              {
+                "k": "sender",
+                "v": {
+                  "t": 2,
+                  "d": [
+                    {
+                      "k": "avatar_url",
+                      "v": "https://avatars.githubusercontent.com/u/118893084?v=4"
+                    },
+                    {
+                      "k": "events_url",
+                      "v": "https://api.github.com/users/mrALWYN/events{/privacy}"
+                    },
+                    {
+                      "k": "followers_url",
+                      "v": "https://api.github.com/users/mrALWYN/followers"
+                    },
+                    {
+                      "k": "following_url",
+                      "v": "https://api.github.com/users/mrALWYN/following{/other_user}"
+                    },
+                    {
+                      "k": "gists_url",
+                      "v": "https://api.github.com/users/mrALWYN/gists{/gist_id}"
+                    },
+                    {
+                      "k": "gravatar_id",
+                      "v": ""
+                    },
+                    {
+                      "k": "html_url",
+                      "v": "https://github.com/mrALWYN"
+                    },
+                    {
+                      "k": "id",
+                      "v": 118893084.0
+                    },
+                    {
+                      "k": "login",
+                      "v": "mrALWYN"
+                    },
+                    {
+                      "k": "node_id",
+                      "v": "U_kgDOBxYqHA"
+                    },
+                    {
+                      "k": "organizations_url",
+                      "v": "https://api.github.com/users/mrALWYN/orgs"
+                    },
+                    {
+                      "k": "received_events_url",
+                      "v": "https://api.github.com/users/mrALWYN/received_events"
+                    },
+                    {
+                      "k": "repos_url",
+                      "v": "https://api.github.com/users/mrALWYN/repos"
+                    },
+                    {
+                      "k": "site_admin",
+                      "v": false
+                    },
+                    {
+                      "k": "starred_url",
+                      "v": "https://api.github.com/users/mrALWYN/starred{/owner}{/repo}"
+                    },
+                    {
+                      "k": "subscriptions_url",
+                      "v": "https://api.github.com/users/mrALWYN/subscriptions"
+                    },
+                    {
+                      "k": "type",
+                      "v": "User"
+                    },
+                    {
+                      "k": "url",
+                      "v": "https://api.github.com/users/mrALWYN"
+                    },
+                    {
+                      "k": "user_view_type",
+                      "v": "public"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "k": "workflow_ref",
+          "v": "mrALWYN/legal-semantic-pipeline/.github/workflows/ci-cd.yml@refs/heads/master"
+        },
+        {
+          "k": "workflow_sha",
+          "v": "fc0f2a9c00f6201998673f4b9408d7e0462ecf94"
+        },
+        {
+          "k": "repository_id",
+          "v": "1093772086"
+        },
+        {
+          "k": "triggering_actor",
+          "v": "mrALWYN"
+        }
+      ]
+    },
+    "inputs": {
+      "t": 2
+    },
+    "job": {
+      "t": 2,
+      "d": [
+        {
+          "k": "check_run_id",
+          "v": 55790634899.0
+        }
+      ]
+    },
+    "matrix": null,
+    "needs": {
+      "t": 2,
+      "d": [
+        {
+          "k": "build",
+          "v": {
+            "t": 2,
+            "d": [
+              {
+                "k": "result",
+                "v": "success"
+              },
+              {
+                "k": "outputs",
+                "v": {
+                  "t": 2
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "strategy": {
+      "t": 2,
+      "d": [
+        {
+          "k": "fail-fast",
+          "v": true
+        },
+        {
+          "k": "job-index",
+          "v": 0.0
+        },
+        {
+          "k": "job-total",
+          "v": 1.0
+        },
+        {
+          "k": "max-parallel",
+          "v": 1.0
+        }
+      ]
+    },
+    "vars": {
+      "t": 2
+    }
+  },
+  "billingOwnerId": "U_kgDOBxYqHA"
+}
+[2025-11-19 07:39:42Z INFO JobRunner] Job ID cab35e3a-79d5-51d2-a705-13a8266a1076
+[2025-11-19 07:39:42Z INFO ConfigurationStore] currentAssemblyLocation: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin\Runner.Worker.dll
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO ConfigurationStore] binPath: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO ConfigurationStore] RootFolder: D:\project\legal-semantic-pipeline\actions-runner\actions-runner
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known config file 'Runner': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.runner'
+[2025-11-19 07:39:42Z INFO ConfigurationStore] ConfigFilePath: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.runner
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known config file 'MigratedRunner': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.runner_migrated'
+[2025-11-19 07:39:42Z INFO ConfigurationStore] MigratedConfigFilePath: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.runner_migrated
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known config file 'Credentials': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.credentials'
+[2025-11-19 07:39:42Z INFO ConfigurationStore] CredFilePath: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.credentials
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known config file 'MigratedCredentials': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.credentials_migrated'
+[2025-11-19 07:39:42Z INFO ConfigurationStore] MigratedCredFilePath: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.credentials_migrated
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known config file 'Service': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.service'
+[2025-11-19 07:39:42Z INFO ConfigurationStore] ServiceConfigFilePath: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.service
+[2025-11-19 07:39:42Z INFO ConfigurationStore] Read setting file: 404 chars
+[2025-11-19 07:39:42Z INFO JobRunner] Initializing launch client
+[2025-11-19 07:39:42Z INFO JobServerQueue] Initializing results client
+[2025-11-19 07:39:42Z INFO ResultServer] Creating websocket client ...wss://results-receiver.actions.githubusercontent.com/_ws/ingest.sock
+[2025-11-19 07:39:42Z INFO ResultServer] Attempting to start websocket client with delay 00:00:00.
+[2025-11-19 07:39:42Z INFO JobServerQueue] Start process web console line queue.
+[2025-11-19 07:39:42Z INFO JobServerQueue] Start process file upload queue.
+[2025-11-19 07:39:42Z INFO JobServerQueue] Start results file upload queue.
+[2025-11-19 07:39:42Z INFO JobServerQueue] Starting results-based upload queue...
+[2025-11-19 07:39:42Z INFO JobServerQueue] Start process timeline update queue.
+[2025-11-19 07:39:42Z INFO ExecutionContext] Initializing Job context
+[2025-11-19 07:39:42Z INFO ExecutionContext] Initialize GitHub context
+[2025-11-19 07:39:42Z INFO ExecutionContext] Initialize Env context
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Diag': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Diag': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag'
+[2025-11-19 07:39:42Z INFO JobRunner] Starting the job execution context.
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:42Z INFO JobRunner] Validating directory permissions for: 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Tools': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_tool'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Temp': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp'
+[2025-11-19 07:39:42Z INFO JobRunner] Getting job extension.
+[2025-11-19 07:39:42Z INFO JobRunner] Initialize job. Getting all job steps.
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Diag': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Diag': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known config file 'Credentials': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.credentials'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known config file 'SetupInfo': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.setup_info'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:42Z INFO PipelineDirectoryManager] Loading tracking config if exists: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_PipelineMapping\mrALWYN/legal-semantic-pipeline\PipelineFolder.json
+[2025-11-19 07:39:42Z INFO PipelineDirectoryManager] Creating a new tracking config file.
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:42Z INFO PipelineDirectoryManager] Creating pipeline directory.
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:42Z INFO PipelineDirectoryManager] Creating workspace directory.
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:42Z INFO JobExtension] Downloading actions
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:42Z INFO HostContext] Well known directory 'Actions': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions'
+[2025-11-19 07:39:42Z INFO Worker] Listening for cancel message from the channel.
+[2025-11-19 07:39:42Z INFO Worker] Waiting for the job to complete or for a cancel message from the channel.
+[2025-11-19 07:39:43Z INFO ResultServer] Successfully started websocket client.
+[2025-11-19 07:39:43Z INFO JobServerQueue] Try to append 1 batches web console lines for record '9b6c78ad-c901-4d6b-b716-449defb66014', success rate: 1/1.
+[2025-11-19 07:39:43Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:43Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:43Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:43Z INFO HostContext] Well known directory 'Actions': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions'
+[2025-11-19 07:39:43Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:43Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:43Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:43Z INFO HostContext] Well known directory 'Actions': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions'
+[2025-11-19 07:39:43Z INFO ActionManager] Save archive 'https://api.github.com/repos/actions/checkout/zipball/f43a0e5ff2bd294095638e18286ca9a3d1956744' into D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions\_temp_74d08b2b-1bde-477c-8119-7d4f4e8f5aab\838af02f-b9d3-41ad-a395-be8b3a607357.zip.
+[2025-11-19 07:39:43Z INFO JobServerQueue] Try to append 1 batches web console lines for record '9b6c78ad-c901-4d6b-b716-449defb66014', success rate: 1/1.
+[2025-11-19 07:39:43Z INFO JobServerQueue] Job timeline record has been updated for the first time.
+[2025-11-19 07:39:44Z INFO ActionManager] Request URL: https://api.github.com/repos/actions/checkout/zipball/f43a0e5ff2bd294095638e18286ca9a3d1956744 X-GitHub-Request-Id: 808B:A922D:32CFE:181CE7:691D7441 Http Status: OK
+[2025-11-19 07:39:44Z INFO ActionManager] Finished getting action repository.
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Actions': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions'
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Load schema file with definitions: [
+  "null",
+  "boolean",
+  "number",
+  "string",
+  "sequence",
+  "mapping",
+  "any",
+  "action-root",
+  "inputs",
+  "input",
+  "outputs",
+  "output-definition",
+  "runs",
+  "container-runs",
+  "container-runs-args",
+  "container-runs-env",
+  "node-runs",
+  "plugin-runs",
+  "composite-runs",
+  "composite-steps",
+  "composite-step",
+  "run-step",
+  "uses-step",
+  "container-runs-context",
+  "output-value",
+  "input-default-context",
+  "non-empty-string",
+  "string-steps-context",
+  "boolean-steps-context",
+  "step-env",
+  "step-if",
+  "step-with"
+]
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Actions': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions'
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Loaded action.yml file: {
+  "name": "Checkout",
+  "description": "Checkout a Git repository at a particular version",
+  "inputs": {
+    "type": 2,
+    "map": [
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 4,
+          "col": 3,
+          "lit": "repository"
+        },
+        "value": {
+          "type": 3,
+          "file": 2,
+          "line": 6,
+          "col": 14,
+          "expr": "github.repository"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 7,
+          "col": 3,
+          "lit": "ref"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 12,
+          "col": 3,
+          "lit": "token"
+        },
+        "value": {
+          "type": 3,
+          "file": 2,
+          "line": 24,
+          "col": 14,
+          "expr": "github.token"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 25,
+          "col": 3,
+          "lit": "ssh-key"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 37,
+          "col": 3,
+          "lit": "ssh-known-hosts"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 42,
+          "col": 3,
+          "lit": "ssh-strict"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 47,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 48,
+          "col": 3,
+          "lit": "persist-credentials"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 50,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 51,
+          "col": 3,
+          "lit": "path"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 53,
+          "col": 3,
+          "lit": "clean"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 55,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 56,
+          "col": 3,
+          "lit": "sparse-checkout"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 60,
+          "col": 14,
+          "lit": ""
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 61,
+          "col": 3,
+          "lit": "sparse-checkout-cone-mode"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 64,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 65,
+          "col": 3,
+          "lit": "fetch-depth"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 67,
+          "col": 14,
+          "lit": "1"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 68,
+          "col": 3,
+          "lit": "fetch-tags"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 70,
+          "col": 14,
+          "lit": "false"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 71,
+          "col": 3,
+          "lit": "lfs"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 73,
+          "col": 14,
+          "lit": "false"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 74,
+          "col": 3,
+          "lit": "submodules"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 82,
+          "col": 14,
+          "lit": "false"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 83,
+          "col": 3,
+          "lit": "set-safe-directory"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 85,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 86,
+          "col": 3,
+          "lit": "github-server-url"
+        },
+        "value": ""
+      }
+    ]
+  },
+  "execution": {
+    "executionType": "nodeJS",
+    "hasPre": false,
+    "hasPost": true,
+    "script": "dist/index.js",
+    "pre": null,
+    "post": "dist/index.js",
+    "nodeVersion": "node16",
+    "cleanupCondition": "always()",
+    "initCondition": "always()"
+  },
+  "deprecated": null
+}
+[2025-11-19 07:39:44Z INFO ActionManager] Action node.js file: dist/index.js, no more preparation.
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Actions': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions'
+[2025-11-19 07:39:44Z INFO ActionManager] Load action that reference repository from 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions\actions\checkout\v3'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Actions': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions'
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Loaded action.yml file: {
+  "name": "Checkout",
+  "description": "Checkout a Git repository at a particular version",
+  "inputs": {
+    "type": 2,
+    "map": [
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 4,
+          "col": 3,
+          "lit": "repository"
+        },
+        "value": {
+          "type": 3,
+          "file": 2,
+          "line": 6,
+          "col": 14,
+          "expr": "github.repository"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 7,
+          "col": 3,
+          "lit": "ref"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 12,
+          "col": 3,
+          "lit": "token"
+        },
+        "value": {
+          "type": 3,
+          "file": 2,
+          "line": 24,
+          "col": 14,
+          "expr": "github.token"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 25,
+          "col": 3,
+          "lit": "ssh-key"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 37,
+          "col": 3,
+          "lit": "ssh-known-hosts"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 42,
+          "col": 3,
+          "lit": "ssh-strict"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 47,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 48,
+          "col": 3,
+          "lit": "persist-credentials"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 50,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 51,
+          "col": 3,
+          "lit": "path"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 53,
+          "col": 3,
+          "lit": "clean"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 55,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 56,
+          "col": 3,
+          "lit": "sparse-checkout"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 60,
+          "col": 14,
+          "lit": ""
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 61,
+          "col": 3,
+          "lit": "sparse-checkout-cone-mode"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 64,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 65,
+          "col": 3,
+          "lit": "fetch-depth"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 67,
+          "col": 14,
+          "lit": "1"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 68,
+          "col": 3,
+          "lit": "fetch-tags"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 70,
+          "col": 14,
+          "lit": "false"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 71,
+          "col": 3,
+          "lit": "lfs"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 73,
+          "col": 14,
+          "lit": "false"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 74,
+          "col": 3,
+          "lit": "submodules"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 82,
+          "col": 14,
+          "lit": "false"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 83,
+          "col": 3,
+          "lit": "set-safe-directory"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 85,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 86,
+          "col": 3,
+          "lit": "github-server-url"
+        },
+        "value": ""
+      }
+    ]
+  },
+  "execution": {
+    "executionType": "nodeJS",
+    "hasPre": false,
+    "hasPost": true,
+    "script": "dist/index.js",
+    "pre": null,
+    "post": "dist/index.js",
+    "nodeVersion": "node16",
+    "cleanupCondition": "always()",
+    "initCondition": "always()"
+  },
+  "deprecated": null
+}
+[2025-11-19 07:39:44Z INFO ActionManager] Action pre node.js file: N/A.
+[2025-11-19 07:39:44Z INFO ActionManager] Action node.js file: dist/index.js.
+[2025-11-19 07:39:44Z INFO ActionManager] Action post node.js file: dist/index.js.
+[2025-11-19 07:39:44Z INFO JobExtension] Adding .
+[2025-11-19 07:39:44Z INFO JobExtension] Adding .
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Diag': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Diag': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Diag': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Diag': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag'
+[2025-11-19 07:39:44Z INFO JobExtension] Total accessible running process: 299.
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:44Z INFO JobExtension] Start checking service connectivity in background.
+[2025-11-19 07:39:44Z INFO ExecutionContext] Publish step telemetry for current step {
+  "action": "setup_job",
+  "type": "runner",
+  "stage": "Pre",
+  "stepId": "9b6c78ad-c901-4d6b-b716-449defb66014",
+  "result": "succeeded",
+  "errorMessages": [],
+  "executionTimeInSeconds": 3,
+  "startTime": "2025-11-19T07:39:42.3946557Z",
+  "finishTime": "2025-11-19T07:39:44.6936339Z"
+}.
+[2025-11-19 07:39:44Z INFO JobRunner] Total job steps: 2.
+[2025-11-19 07:39:44Z INFO JobRunner] Run all job steps.
+[2025-11-19 07:39:44Z INFO StepsRunner] Processing step: DisplayName='Checkout code'
+[2025-11-19 07:39:44Z INFO StepsRunner] Evaluating: success()
+[2025-11-19 07:39:44Z INFO StepsRunner] Result: true
+[2025-11-19 07:39:44Z INFO StepsRunner] Starting the step.
+[2025-11-19 07:39:44Z INFO JobServerQueue] Try to append 1 batches web console lines for record '9b6c78ad-c901-4d6b-b716-449defb66014', success rate: 1/1.
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:44Z INFO StepsRunner] Which2: 'chcp'
+[2025-11-19 07:39:44Z INFO StepsRunner] Location: 'C:\WINDOWS\system32\chcp.COM'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper] Starting process:
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   File name: 'C:\WINDOWS\system32\chcp.COM'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Arguments: '65001'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Working directory: 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Require exit code zero: 'False'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Encoding web name:  ; code page: ''
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Force kill process on cancellation: 'False'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Redirected STDIN: 'False'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Persist current code page: 'True'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Keep redirected STDIN open: 'False'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   High priority process: 'False'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper] Process started with process id 23116, waiting for process exit.
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper] STDOUT/STDERR stream read finished.
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper] STDOUT/STDERR stream read finished.
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper] Finished process 23116 with exit code 0, and elapsed time 00:00:00.0197275.
+[2025-11-19 07:39:44Z INFO StepsRunner] Successfully returned to code page 65001 (UTF8)
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Actions': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions'
+[2025-11-19 07:39:44Z INFO ActionManager] Load action that reference repository from 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions\actions\checkout\v3'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Actions': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions'
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Loaded action.yml file: {
+  "name": "Checkout",
+  "description": "Checkout a Git repository at a particular version",
+  "inputs": {
+    "type": 2,
+    "map": [
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 4,
+          "col": 3,
+          "lit": "repository"
+        },
+        "value": {
+          "type": 3,
+          "file": 2,
+          "line": 6,
+          "col": 14,
+          "expr": "github.repository"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 7,
+          "col": 3,
+          "lit": "ref"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 12,
+          "col": 3,
+          "lit": "token"
+        },
+        "value": {
+          "type": 3,
+          "file": 2,
+          "line": 24,
+          "col": 14,
+          "expr": "github.token"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 25,
+          "col": 3,
+          "lit": "ssh-key"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 37,
+          "col": 3,
+          "lit": "ssh-known-hosts"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 42,
+          "col": 3,
+          "lit": "ssh-strict"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 47,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 48,
+          "col": 3,
+          "lit": "persist-credentials"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 50,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 51,
+          "col": 3,
+          "lit": "path"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 53,
+          "col": 3,
+          "lit": "clean"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 55,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 56,
+          "col": 3,
+          "lit": "sparse-checkout"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 60,
+          "col": 14,
+          "lit": ""
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 61,
+          "col": 3,
+          "lit": "sparse-checkout-cone-mode"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 64,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 65,
+          "col": 3,
+          "lit": "fetch-depth"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 67,
+          "col": 14,
+          "lit": "1"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 68,
+          "col": 3,
+          "lit": "fetch-tags"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 70,
+          "col": 14,
+          "lit": "false"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 71,
+          "col": 3,
+          "lit": "lfs"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 73,
+          "col": 14,
+          "lit": "false"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 74,
+          "col": 3,
+          "lit": "submodules"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 82,
+          "col": 14,
+          "lit": "false"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 83,
+          "col": 3,
+          "lit": "set-safe-directory"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 85,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 86,
+          "col": 3,
+          "lit": "github-server-url"
+        },
+        "value": ""
+      }
+    ]
+  },
+  "execution": {
+    "executionType": "nodeJS",
+    "hasPre": false,
+    "hasPost": true,
+    "script": "dist/index.js",
+    "pre": null,
+    "post": "dist/index.js",
+    "nodeVersion": "node16",
+    "cleanupCondition": "always()",
+    "initCondition": "always()"
+  },
+  "deprecated": null
+}
+[2025-11-19 07:39:44Z INFO ActionManager] Action pre node.js file: N/A.
+[2025-11-19 07:39:44Z INFO ActionManager] Action node.js file: dist/index.js.
+[2025-11-19 07:39:44Z INFO ActionManager] Action post node.js file: dist/index.js.
+[2025-11-19 07:39:44Z INFO ExecutionContext] Reserve record order 4 to 6 for post job actions.
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Diag': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Diag': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Temp': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp'
+[2025-11-19 07:39:44Z INFO ExecutionContext] Write event payload to D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp\_github_workflow\event.json
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Temp': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp'
+[2025-11-19 07:39:44Z INFO ExtensionManager] Getting extensions for interface: 'GitHub.Runner.Worker.IFileCommandExtension'
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.AddPathFileCommand, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.SetEnvFileCommand, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.CreateStepSummaryCommand, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.SaveStateFileCommand, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.SetOutputFileCommand, Runner.Worker
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'repository': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 6,
+  "col": 14,
+  "lit": "mrALWYN/legal-semantic-pipeline"
+}
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'ref': default value evaluate result: ""
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'token': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 24,
+  "col": 14,
+  "lit": "***"
+}
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'ssh-key': default value evaluate result: ""
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'ssh-known-hosts': default value evaluate result: ""
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'ssh-strict': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 47,
+  "col": 14,
+  "lit": "true"
+}
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'persist-credentials': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 50,
+  "col": 14,
+  "lit": "true"
+}
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'path': default value evaluate result: ""
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'clean': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 55,
+  "col": 14,
+  "lit": "true"
+}
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'sparse-checkout': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 60,
+  "col": 14,
+  "lit": ""
+}
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'sparse-checkout-cone-mode': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 64,
+  "col": 14,
+  "lit": "true"
+}
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'fetch-depth': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 67,
+  "col": 14,
+  "lit": "1"
+}
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'fetch-tags': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 70,
+  "col": 14,
+  "lit": "false"
+}
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'lfs': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 73,
+  "col": 14,
+  "lit": "false"
+}
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'submodules': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 82,
+  "col": 14,
+  "lit": "false"
+}
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'set-safe-directory': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 85,
+  "col": 14,
+  "lit": "true"
+}
+[2025-11-19 07:39:44Z INFO ActionManifestManager] Input 'github-server-url': default value evaluate result: ""
+[2025-11-19 07:39:44Z INFO ExtensionManager] Getting extensions for interface: 'GitHub.Runner.Worker.IActionCommandExtension'
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.InternalPluginSetRepoPathCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.SetEnvCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.SetOutputCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.SaveStateCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.AddPathCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.AddMaskCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.AddMatcherCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.RemoveMatcherCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.WarningCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.ErrorCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.NoticeCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.DebugCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.GroupCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.EndGroupCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ExtensionManager] Creating instance: GitHub.Runner.Worker.EchoCommandExtension, Runner.Worker
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command internal-set-repo-path
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command set-env
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command set-output
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command save-state
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command add-path
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command add-mask
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command add-matcher
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command remove-matcher
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command warning
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command error
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command notice
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command debug
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command group
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command endgroup
+[2025-11-19 07:39:44Z INFO ActionCommandManager] Register action command extension for command echo
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:44Z INFO HostContext] Well known directory 'Externals': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\externals'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper] Starting process:
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   File name: 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\externals\node20\bin\node.exe'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Arguments: '"D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions\actions\checkout\v3\dist/index.js"'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Working directory: 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\legal-semantic-pipeline\legal-semantic-pipeline'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Require exit code zero: 'False'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Encoding web name: utf-8 ; code page: '65001'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Force kill process on cancellation: 'False'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Redirected STDIN: 'False'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Persist current code page: 'True'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   Keep redirected STDIN open: 'False'
+[2025-11-19 07:39:44Z INFO ProcessInvokerWrapper]   High priority process: 'False'
+[2025-11-19 07:39:44Z INFO JobServerQueue] Try to append 1 batches web console lines for record '1629293c-3d90-4c86-b3e3-8ce4cdf277c9', success rate: 1/1.
+[2025-11-19 07:39:45Z INFO JobServerQueue] Got a step log file to send to results service.
+[2025-11-19 07:39:45Z INFO JobServerQueue] Starting upload of step log file to results service ResultsLog, D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag\blocks\4debe5a9-7be7-4e22-9942-272bf613db47_9b6c78ad-c901-4d6b-b716-449defb66014.1
+[2025-11-19 07:39:45Z INFO JobServerQueue] Try to upload 1 log files or attachments, success rate: 1/1.
+[2025-11-19 07:39:45Z INFO ProcessInvokerWrapper] Process started with process id 22876, waiting for process exit.
+[2025-11-19 07:39:45Z INFO AddMaskCommandExtension] Add new secret mask with length of 76
+[2025-11-19 07:39:46Z INFO JobServerQueue] Try to append 1 batches web console lines for record '1629293c-3d90-4c86-b3e3-8ce4cdf277c9', success rate: 1/1.
+[2025-11-19 07:39:46Z INFO JobServerQueue] Try to append 1 batches web console lines for record '1629293c-3d90-4c86-b3e3-8ce4cdf277c9', success rate: 1/1.
+[2025-11-19 07:39:46Z INFO JobServerQueue] Tried to upload 1 file(s) to results, success rate: 1/1.
+[2025-11-19 07:39:47Z INFO JobServerQueue] Try to append 1 batches web console lines for record '1629293c-3d90-4c86-b3e3-8ce4cdf277c9', success rate: 1/1.
+[2025-11-19 07:39:47Z INFO JobServerQueue] Try to append 1 batches web console lines for record '1629293c-3d90-4c86-b3e3-8ce4cdf277c9', success rate: 1/1.
+[2025-11-19 07:39:47Z INFO JobServerQueue] Try to append 1 batches web console lines for record '1629293c-3d90-4c86-b3e3-8ce4cdf277c9', success rate: 1/1.
+[2025-11-19 07:39:48Z INFO JobServerQueue] Try to append 3 batches web console lines for record '1629293c-3d90-4c86-b3e3-8ce4cdf277c9', success rate: 3/3.
+[2025-11-19 07:39:48Z INFO JobServerQueue] Try to append 1 batches web console lines for record '1629293c-3d90-4c86-b3e3-8ce4cdf277c9', success rate: 1/1.
+[2025-11-19 07:39:49Z INFO JobServerQueue] Try to append 1 batches web console lines for record '1629293c-3d90-4c86-b3e3-8ce4cdf277c9', success rate: 1/1.
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] STDOUT/STDERR stream read finished.
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] STDOUT/STDERR stream read finished.
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] Finished process 22876 with exit code 0, and elapsed time 00:00:04.5287877.
+[2025-11-19 07:39:49Z INFO CreateStepSummaryCommand] Step Summary file (D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp\_runner_file_commands\step_summary_3f6e63e9-fafc-4245-bfa2-979cd0060d26) is empty; skipping attachment upload
+[2025-11-19 07:39:49Z INFO StepsRunner] Step result: 
+[2025-11-19 07:39:49Z INFO ExecutionContext] Publish step telemetry for current step {
+  "action": "actions/checkout",
+  "ref": "v3",
+  "type": "node20",
+  "stage": "Main",
+  "stepId": "1629293c-3d90-4c86-b3e3-8ce4cdf277c9",
+  "stepContextName": "__actions_checkout",
+  "hasPreStep": false,
+  "hasPostStep": true,
+  "result": "succeeded",
+  "errorMessages": [],
+  "executionTimeInSeconds": 5,
+  "startTime": "2025-11-19T07:39:44.7078978Z",
+  "finishTime": "2025-11-19T07:39:49.3219415Z"
+}.
+[2025-11-19 07:39:49Z INFO StepsRunner] No need for updating job result with current step result 'Succeeded'.
+[2025-11-19 07:39:49Z INFO StepsRunner] Current state: job state = ''
+[2025-11-19 07:39:49Z INFO StepsRunner] Processing step: DisplayName='Deploy to local staging'
+[2025-11-19 07:39:49Z INFO StepsRunner] Evaluating: success()
+[2025-11-19 07:39:49Z INFO StepsRunner] Result: true
+[2025-11-19 07:39:49Z INFO StepsRunner] Starting the step.
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:49Z INFO StepsRunner] Which2: 'chcp'
+[2025-11-19 07:39:49Z INFO StepsRunner] Location: 'C:\WINDOWS\system32\chcp.COM'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] Starting process:
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   File name: 'C:\WINDOWS\system32\chcp.COM'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Arguments: '65001'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Working directory: 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Require exit code zero: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Encoding web name:  ; code page: ''
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Force kill process on cancellation: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Redirected STDIN: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Persist current code page: 'True'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Keep redirected STDIN open: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   High priority process: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] Process started with process id 24788, waiting for process exit.
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] STDOUT/STDERR stream read finished.
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] STDOUT/STDERR stream read finished.
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] Finished process 24788 with exit code 0, and elapsed time 00:00:00.0099524.
+[2025-11-19 07:39:49Z INFO StepsRunner] Successfully returned to code page 65001 (UTF8)
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Temp': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp'
+[2025-11-19 07:39:49Z INFO ExecutionContext] Write event payload to D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp\_github_workflow\event.json
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Temp': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp'
+[2025-11-19 07:39:49Z INFO ExtensionManager] Getting extensions for interface: 'GitHub.Runner.Worker.IFileCommandExtension'
+[2025-11-19 07:39:49Z INFO ExtensionManager] Getting extensions for interface: 'GitHub.Runner.Worker.IActionCommandExtension'
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command internal-set-repo-path
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command set-env
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command set-output
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command save-state
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command add-path
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command add-mask
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command add-matcher
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command remove-matcher
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command warning
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command error
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command notice
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command debug
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command group
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command endgroup
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command echo
+[2025-11-19 07:39:49Z INFO ScriptHandler] Which2: 'pwsh'
+[2025-11-19 07:39:49Z INFO ScriptHandler] pwsh: command not found. Make sure 'pwsh' is installed and its location included in the 'Path' environment variable.
+[2025-11-19 07:39:49Z INFO ScriptHandler] Defaulting to powershell
+[2025-11-19 07:39:49Z INFO ScriptHandler] Which2: 'powershell'
+[2025-11-19 07:39:49Z INFO ScriptHandler] Location: 'C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.EXE'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Temp': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp'
+[2025-11-19 07:39:49Z INFO ScriptHandler] Which2: 'pwsh'
+[2025-11-19 07:39:49Z INFO ScriptHandler] pwsh: command not found. Make sure 'pwsh' is installed and its location included in the 'Path' environment variable.
+[2025-11-19 07:39:49Z INFO ScriptHandler] Defaulting to powershell
+[2025-11-19 07:39:49Z INFO ScriptHandler] Which2: 'powershell'
+[2025-11-19 07:39:49Z INFO ScriptHandler] Location: 'C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.EXE'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] Starting process:
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   File name: 'C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.EXE'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Arguments: '-command ". 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp\0d640a62-7c20-4bc0-99f6-6fecbdbde75d.ps1'"'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Working directory: 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\legal-semantic-pipeline\legal-semantic-pipeline'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Require exit code zero: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Encoding web name:  ; code page: ''
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Force kill process on cancellation: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Redirected STDIN: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Persist current code page: 'True'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Keep redirected STDIN open: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   High priority process: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] Process started with process id 23856, waiting for process exit.
+[2025-11-19 07:39:49Z INFO JobServerQueue] Try to upload 1 log files or attachments, success rate: 1/1.
+[2025-11-19 07:39:49Z INFO JobServerQueue] Try to append 1 batches web console lines for record '1629293c-3d90-4c86-b3e3-8ce4cdf277c9', success rate: 1/1.
+[2025-11-19 07:39:49Z INFO JobServerQueue] Try to append 1 batches web console lines for record '992840f9-4a33-4508-b657-fd29d73cc287', success rate: 1/1.
+[2025-11-19 07:39:49Z INFO JobServerQueue] Got a step log file to send to results service.
+[2025-11-19 07:39:49Z INFO JobServerQueue] Starting upload of step log file to results service ResultsLog, D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag\blocks\4debe5a9-7be7-4e22-9942-272bf613db47_1629293c-3d90-4c86-b3e3-8ce4cdf277c9.1
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] STDOUT/STDERR stream read finished.
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] STDOUT/STDERR stream read finished.
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] Finished process 23856 with exit code 1, and elapsed time 00:00:00.3969712.
+[2025-11-19 07:39:49Z INFO CreateStepSummaryCommand] Step Summary file (D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp\_runner_file_commands\step_summary_30fb89ce-ac33-4864-a879-980b39c75329) is empty; skipping attachment upload
+[2025-11-19 07:39:49Z INFO StepsRunner] Step result: Failed
+[2025-11-19 07:39:49Z INFO ExecutionContext] Publish step telemetry for current step {
+  "action": "powershell",
+  "type": "run",
+  "stage": "Main",
+  "stepId": "992840f9-4a33-4508-b657-fd29d73cc287",
+  "stepContextName": "__run",
+  "result": "failed",
+  "errorMessages": [
+    "Process completed with exit code 1."
+  ],
+  "executionTimeInSeconds": 1,
+  "startTime": "2025-11-19T07:39:49.3227126Z",
+  "finishTime": "2025-11-19T07:39:49.7615772Z"
+}.
+[2025-11-19 07:39:49Z INFO StepsRunner] Update job result with current step result 'Failed'.
+[2025-11-19 07:39:49Z INFO StepsRunner] Current state: job state = 'Failed'
+[2025-11-19 07:39:49Z INFO StepsRunner] Processing step: DisplayName='Post Checkout code'
+[2025-11-19 07:39:49Z INFO StepsRunner] Evaluating: always()
+[2025-11-19 07:39:49Z INFO StepsRunner] Result: true
+[2025-11-19 07:39:49Z INFO StepsRunner] Starting the step.
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:49Z INFO StepsRunner] Which2: 'chcp'
+[2025-11-19 07:39:49Z INFO StepsRunner] Location: 'C:\WINDOWS\system32\chcp.COM'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] Starting process:
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   File name: 'C:\WINDOWS\system32\chcp.COM'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Arguments: '65001'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Working directory: 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Require exit code zero: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Encoding web name:  ; code page: ''
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Force kill process on cancellation: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Redirected STDIN: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Persist current code page: 'True'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Keep redirected STDIN open: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   High priority process: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] Process started with process id 24720, waiting for process exit.
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] STDOUT/STDERR stream read finished.
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] STDOUT/STDERR stream read finished.
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] Finished process 24720 with exit code 0, and elapsed time 00:00:00.0190847.
+[2025-11-19 07:39:49Z INFO StepsRunner] Successfully returned to code page 65001 (UTF8)
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Actions': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions'
+[2025-11-19 07:39:49Z INFO ActionManager] Load action that reference repository from 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions\actions\checkout\v3'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Actions': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions'
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Loaded action.yml file: {
+  "name": "Checkout",
+  "description": "Checkout a Git repository at a particular version",
+  "inputs": {
+    "type": 2,
+    "map": [
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 4,
+          "col": 3,
+          "lit": "repository"
+        },
+        "value": {
+          "type": 3,
+          "file": 2,
+          "line": 6,
+          "col": 14,
+          "expr": "github.repository"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 7,
+          "col": 3,
+          "lit": "ref"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 12,
+          "col": 3,
+          "lit": "token"
+        },
+        "value": {
+          "type": 3,
+          "file": 2,
+          "line": 24,
+          "col": 14,
+          "expr": "github.token"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 25,
+          "col": 3,
+          "lit": "ssh-key"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 37,
+          "col": 3,
+          "lit": "ssh-known-hosts"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 42,
+          "col": 3,
+          "lit": "ssh-strict"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 47,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 48,
+          "col": 3,
+          "lit": "persist-credentials"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 50,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 51,
+          "col": 3,
+          "lit": "path"
+        },
+        "value": ""
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 53,
+          "col": 3,
+          "lit": "clean"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 55,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 56,
+          "col": 3,
+          "lit": "sparse-checkout"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 60,
+          "col": 14,
+          "lit": ""
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 61,
+          "col": 3,
+          "lit": "sparse-checkout-cone-mode"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 64,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 65,
+          "col": 3,
+          "lit": "fetch-depth"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 67,
+          "col": 14,
+          "lit": "1"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 68,
+          "col": 3,
+          "lit": "fetch-tags"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 70,
+          "col": 14,
+          "lit": "false"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 71,
+          "col": 3,
+          "lit": "lfs"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 73,
+          "col": 14,
+          "lit": "false"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 74,
+          "col": 3,
+          "lit": "submodules"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 82,
+          "col": 14,
+          "lit": "false"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 83,
+          "col": 3,
+          "lit": "set-safe-directory"
+        },
+        "value": {
+          "type": 0,
+          "file": 2,
+          "line": 85,
+          "col": 14,
+          "lit": "true"
+        }
+      },
+      {
+        "key": {
+          "type": 0,
+          "file": 2,
+          "line": 86,
+          "col": 3,
+          "lit": "github-server-url"
+        },
+        "value": ""
+      }
+    ]
+  },
+  "execution": {
+    "executionType": "nodeJS",
+    "hasPre": false,
+    "hasPost": true,
+    "script": "dist/index.js",
+    "pre": null,
+    "post": "dist/index.js",
+    "nodeVersion": "node16",
+    "cleanupCondition": "always()",
+    "initCondition": "always()"
+  },
+  "deprecated": null
+}
+[2025-11-19 07:39:49Z INFO ActionManager] Action pre node.js file: N/A.
+[2025-11-19 07:39:49Z INFO ActionManager] Action node.js file: dist/index.js.
+[2025-11-19 07:39:49Z INFO ActionManager] Action post node.js file: dist/index.js.
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Temp': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp'
+[2025-11-19 07:39:49Z INFO ExecutionContext] Write event payload to D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp\_github_workflow\event.json
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Temp': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp'
+[2025-11-19 07:39:49Z INFO ExtensionManager] Getting extensions for interface: 'GitHub.Runner.Worker.IFileCommandExtension'
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'repository': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 6,
+  "col": 14,
+  "lit": "mrALWYN/legal-semantic-pipeline"
+}
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'ref': default value evaluate result: ""
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'token': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 24,
+  "col": 14,
+  "lit": "***"
+}
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'ssh-key': default value evaluate result: ""
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'ssh-known-hosts': default value evaluate result: ""
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'ssh-strict': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 47,
+  "col": 14,
+  "lit": "true"
+}
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'persist-credentials': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 50,
+  "col": 14,
+  "lit": "true"
+}
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'path': default value evaluate result: ""
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'clean': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 55,
+  "col": 14,
+  "lit": "true"
+}
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'sparse-checkout': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 60,
+  "col": 14,
+  "lit": ""
+}
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'sparse-checkout-cone-mode': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 64,
+  "col": 14,
+  "lit": "true"
+}
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'fetch-depth': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 67,
+  "col": 14,
+  "lit": "1"
+}
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'fetch-tags': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 70,
+  "col": 14,
+  "lit": "false"
+}
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'lfs': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 73,
+  "col": 14,
+  "lit": "false"
+}
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'submodules': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 82,
+  "col": 14,
+  "lit": "false"
+}
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'set-safe-directory': default value evaluate result: {
+  "type": 0,
+  "file": 2,
+  "line": 85,
+  "col": 14,
+  "lit": "true"
+}
+[2025-11-19 07:39:49Z INFO ActionManifestManager] Input 'github-server-url': default value evaluate result: ""
+[2025-11-19 07:39:49Z INFO ExtensionManager] Getting extensions for interface: 'GitHub.Runner.Worker.IActionCommandExtension'
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command internal-set-repo-path
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command set-env
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command set-output
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command save-state
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command add-path
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command add-mask
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command add-matcher
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command remove-matcher
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command warning
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command error
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command notice
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command debug
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command group
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command endgroup
+[2025-11-19 07:39:49Z INFO ActionCommandManager] Register action command extension for command echo
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:49Z INFO HostContext] Well known directory 'Externals': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\externals'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] Starting process:
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   File name: 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\externals\node20\bin\node.exe'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Arguments: '"D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_actions\actions\checkout\v3\dist/index.js"'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Working directory: 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\legal-semantic-pipeline\legal-semantic-pipeline'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Require exit code zero: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Encoding web name: utf-8 ; code page: '65001'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Force kill process on cancellation: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Redirected STDIN: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Persist current code page: 'True'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   Keep redirected STDIN open: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper]   High priority process: 'False'
+[2025-11-19 07:39:49Z INFO ProcessInvokerWrapper] Process started with process id 15564, waiting for process exit.
+[2025-11-19 07:39:49Z INFO JobServerQueue] Try to append 1 batches web console lines for record '992840f9-4a33-4508-b657-fd29d73cc287', success rate: 1/1.
+[2025-11-19 07:39:49Z INFO JobServerQueue] Try to append 1 batches web console lines for record 'c355843d-ba20-4f7c-827c-41bfdd5a8bae', success rate: 1/1.
+[2025-11-19 07:39:49Z INFO AddMaskCommandExtension] Add new secret mask with length of 32
+[2025-11-19 07:39:50Z INFO JobServerQueue] Try to append 1 batches web console lines for record 'c355843d-ba20-4f7c-827c-41bfdd5a8bae', success rate: 1/1.
+[2025-11-19 07:39:50Z INFO JobServerQueue] Try to upload 1 log files or attachments, success rate: 1/1.
+[2025-11-19 07:39:50Z INFO JobServerQueue] Tried to upload 1 file(s) to results, success rate: 1/1.
+[2025-11-19 07:39:50Z INFO JobServerQueue] Try to append 1 batches web console lines for record 'c355843d-ba20-4f7c-827c-41bfdd5a8bae', success rate: 1/1.
+[2025-11-19 07:39:51Z INFO ProcessInvokerWrapper] STDOUT/STDERR stream read finished.
+[2025-11-19 07:39:51Z INFO ProcessInvokerWrapper] STDOUT/STDERR stream read finished.
+[2025-11-19 07:39:51Z INFO ProcessInvokerWrapper] Finished process 15564 with exit code 0, and elapsed time 00:00:01.6447210.
+[2025-11-19 07:39:51Z INFO CreateStepSummaryCommand] Step Summary file (D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp\_runner_file_commands\step_summary_6a740058-7aaa-4e89-aa9a-67c775bd1661) is empty; skipping attachment upload
+[2025-11-19 07:39:51Z INFO StepsRunner] Step result: 
+[2025-11-19 07:39:51Z INFO ExecutionContext] Publish step telemetry for current step {
+  "action": "actions/checkout",
+  "ref": "v3",
+  "type": "node20",
+  "stage": "Post",
+  "stepId": "c355843d-ba20-4f7c-827c-41bfdd5a8bae",
+  "result": "succeeded",
+  "errorMessages": [],
+  "executionTimeInSeconds": 2,
+  "startTime": "2025-11-19T07:39:49.7643096Z",
+  "finishTime": "2025-11-19T07:39:51.4481616Z"
+}.
+[2025-11-19 07:39:51Z INFO StepsRunner] No need for updating job result with current step result 'Succeeded'.
+[2025-11-19 07:39:51Z INFO StepsRunner] Current state: job state = 'Failed'
+[2025-11-19 07:39:51Z INFO JobRunner] Finalize job.
+[2025-11-19 07:39:51Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:51Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:51Z INFO HostContext] Well known directory 'Diag': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag'
+[2025-11-19 07:39:51Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:51Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:51Z INFO HostContext] Well known directory 'Diag': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag'
+[2025-11-19 07:39:51Z INFO JobExtension] Initialize Env context
+[2025-11-19 07:39:51Z INFO JobExtension] Initialize steps context
+[2025-11-19 07:39:51Z INFO JobExtension] Total accessible running process: 297.
+[2025-11-19 07:39:51Z INFO JobServerQueue] Try to append 1 batches web console lines for record '2d38dc83-1a83-42a8-ac16-999045d5c948', success rate: 1/1.
+[2025-11-19 07:39:51Z INFO ExecutionContext] Publish step telemetry for current step {
+  "action": "complete_job",
+  "type": "runner",
+  "stage": "Post",
+  "stepId": "2d38dc83-1a83-42a8-ac16-999045d5c948",
+  "result": "succeeded",
+  "errorMessages": [],
+  "executionTimeInSeconds": 1,
+  "startTime": "2025-11-19T07:39:51.452154Z",
+  "finishTime": "2025-11-19T07:39:51.4623812Z"
+}.
+[2025-11-19 07:39:51Z INFO JobRunner] Job result after all job steps finish: Failed
+[2025-11-19 07:39:51Z INFO JobRunner] Completing the job execution context.
+[2025-11-19 07:39:51Z INFO JobRunner] Shutting down the job server queue.
+[2025-11-19 07:39:51Z INFO JobServerQueue] Fire signal to shutdown all queues.
+[2025-11-19 07:39:52Z INFO JobServerQueue] All queue process task stopped.
+[2025-11-19 07:39:52Z INFO JobServerQueue] Web console line queue drained.
+[2025-11-19 07:39:52Z INFO JobServerQueue] Uploading 3 files in one shot.
+[2025-11-19 07:39:52Z INFO JobServerQueue] Try to upload 3 log files or attachments, success rate: 3/3.
+[2025-11-19 07:39:52Z INFO JobServerQueue] File upload queue drained.
+[2025-11-19 07:39:52Z INFO JobServerQueue] Starting results-based upload queue...
+[2025-11-19 07:39:52Z INFO JobServerQueue] Uploading 4 file(s) in one shot through results service.
+[2025-11-19 07:39:52Z INFO JobServerQueue] Got a step log file to send to results service.
+[2025-11-19 07:39:52Z INFO JobServerQueue] Starting upload of step log file to results service ResultsLog, D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag\blocks\4debe5a9-7be7-4e22-9942-272bf613db47_992840f9-4a33-4508-b657-fd29d73cc287.1
+[2025-11-19 07:39:53Z INFO JobServerQueue] Got a step log file to send to results service.
+[2025-11-19 07:39:53Z INFO JobServerQueue] Starting upload of step log file to results service ResultsLog, D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag\blocks\4debe5a9-7be7-4e22-9942-272bf613db47_c355843d-ba20-4f7c-827c-41bfdd5a8bae.1
+[2025-11-19 07:39:53Z INFO JobServerQueue] Got a step log file to send to results service.
+[2025-11-19 07:39:53Z INFO JobServerQueue] Starting upload of step log file to results service ResultsLog, D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag\blocks\4debe5a9-7be7-4e22-9942-272bf613db47_2d38dc83-1a83-42a8-ac16-999045d5c948.1
+[2025-11-19 07:39:54Z INFO JobServerQueue] Got a job log file to send to results service.
+[2025-11-19 07:39:54Z INFO JobServerQueue] Starting upload of job log file to results service ResultsLog, D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag\blocks\4debe5a9-7be7-4e22-9942-272bf613db47_cab35e3a-79d5-51d2-a705-13a8266a1076.1
+[2025-11-19 07:39:55Z INFO JobServerQueue] Tried to upload 4 file(s) to results, success rate: 4/4.
+[2025-11-19 07:39:55Z INFO JobServerQueue] Results upload queue drained.
+[2025-11-19 07:39:55Z INFO JobServerQueue] Timeline update queue drained.
+[2025-11-19 07:39:55Z INFO JobServerQueue] Disposing job server ...
+[2025-11-19 07:39:55Z INFO JobServerQueue] Disposing results server ...
+[2025-11-19 07:39:55Z INFO JobServerQueue] All queue process tasks have been stopped, and all queues are drained.
+[2025-11-19 07:39:55Z INFO TempDirectoryManager] Cleaning runner temp folder: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work\_temp
+[2025-11-19 07:39:55Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:39:55Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:39:55Z INFO HostContext] Well known directory 'Diag': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag'
+[2025-11-19 07:39:55Z INFO HostContext] Well known config file 'Telemetry': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_diag\.telemetry'
+[2025-11-19 07:39:55Z INFO JobRunner] Raising job completed against run service
+[2025-11-19 07:39:56Z INFO Worker] Job completed.

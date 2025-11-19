@@ -1,0 +1,12 @@
+﻿{
+  "repositoryName": "mrALWYN/legal-semantic-pipeline",
+  "pipelineDirectory": "legal-semantic-pipeline",
+  "workspaceDirectory": "legal-semantic-pipeline\\legal-semantic-pipeline",
+  "repositories": {
+    "mrALWYN/legal-semantic-pipeline": {
+      "repositoryPath": "legal-semantic-pipeline\\legal-semantic-pipeline",
+      "lastRunOn": "11/19/2025 13:09:42 +05:30"
+    }
+  },
+  "lastRunOn": "11/19/2025 13:09:42 +05:30"
+}

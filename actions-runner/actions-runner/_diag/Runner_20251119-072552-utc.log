@@ -1,0 +1,232 @@
+[2025-11-19 07:25:52Z INFO HostContext] No proxy settings were found based on environmental variables (http_proxy/https_proxy/HTTP_PROXY/HTTPS_PROXY)
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:25:52Z INFO HostContext] Well known config file 'Credentials': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.credentials'
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:25:52Z INFO HostContext] Well known config file 'Runner': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.runner'
+[2025-11-19 07:25:52Z INFO Listener] Runner is built for Windows (X64) - win-x64.
+[2025-11-19 07:25:52Z INFO Listener] RuntimeInformation: Microsoft Windows 10.0.26200.
+[2025-11-19 07:25:52Z INFO Listener] Version: 2.329.0
+[2025-11-19 07:25:52Z INFO Listener] Commit: c76c59996c8fa32e989164a5a695efb12608ae5a
+[2025-11-19 07:25:52Z INFO Listener] Culture: en-IN
+[2025-11-19 07:25:52Z INFO Listener] UI Culture: en-US
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:25:52Z INFO Listener] Validating directory permissions for: 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:25:52Z INFO CommandLineParser] Parse
+[2025-11-19 07:25:52Z INFO CommandLineParser] Parsing 5 args
+[2025-11-19 07:25:52Z INFO CommandLineParser] parsing argument
+[2025-11-19 07:25:52Z INFO CommandLineParser] HasArgs: False
+[2025-11-19 07:25:52Z INFO CommandLineParser] Adding Command: configure
+[2025-11-19 07:25:52Z INFO CommandLineParser] parsing argument
+[2025-11-19 07:25:52Z INFO CommandLineParser] HasArgs: True
+[2025-11-19 07:25:52Z INFO CommandLineParser] arg: url
+[2025-11-19 07:25:52Z INFO CommandLineParser] parsing argument
+[2025-11-19 07:25:52Z INFO CommandLineParser] HasArgs: True
+[2025-11-19 07:25:52Z INFO CommandLineParser] Adding option 'url': 'https://github.com/mrALWYN/legal-semantic-pipeline'
+[2025-11-19 07:25:52Z INFO CommandLineParser] parsing argument
+[2025-11-19 07:25:52Z INFO CommandLineParser] HasArgs: True
+[2025-11-19 07:25:52Z INFO CommandLineParser] arg: token
+[2025-11-19 07:25:52Z INFO CommandLineParser] parsing argument
+[2025-11-19 07:25:52Z INFO CommandLineParser] HasArgs: True
+[2025-11-19 07:25:52Z INFO CommandLineParser] Adding option 'token': '***'
+[2025-11-19 07:25:52Z INFO Listener] Arguments parsed
+[2025-11-19 07:25:52Z INFO Runner] ExecuteCommand
+[2025-11-19 07:25:52Z INFO ConfigurationStore] currentAssemblyLocation: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin\Runner.Listener.dll
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:25:52Z INFO ConfigurationStore] binPath: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:25:52Z INFO ConfigurationStore] RootFolder: D:\project\legal-semantic-pipeline\actions-runner\actions-runner
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:25:52Z INFO HostContext] Well known config file 'Runner': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.runner'
+[2025-11-19 07:25:52Z INFO ConfigurationStore] ConfigFilePath: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.runner
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:25:52Z INFO HostContext] Well known config file 'MigratedRunner': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.runner_migrated'
+[2025-11-19 07:25:52Z INFO ConfigurationStore] MigratedConfigFilePath: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.runner_migrated
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:25:52Z INFO HostContext] Well known config file 'Credentials': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.credentials'
+[2025-11-19 07:25:52Z INFO ConfigurationStore] CredFilePath: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.credentials
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:25:52Z INFO HostContext] Well known config file 'MigratedCredentials': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.credentials_migrated'
+[2025-11-19 07:25:52Z INFO ConfigurationStore] MigratedCredFilePath: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.credentials_migrated
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:25:52Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:25:52Z INFO HostContext] Well known config file 'Service': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.service'
+[2025-11-19 07:25:52Z INFO ConfigurationStore] ServiceConfigFilePath: D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.service
+[2025-11-19 07:25:52Z INFO CommandSettings] Flag 'help': 'False'
+[2025-11-19 07:25:52Z INFO CommandSettings] Flag 'version': 'False'
+[2025-11-19 07:25:52Z INFO CommandSettings] Flag 'commit': 'False'
+[2025-11-19 07:25:52Z INFO CommandSettings] Flag 'check': 'False'
+[2025-11-19 07:25:52Z INFO CommandSettings] Command 'configure': 'True'
+[2025-11-19 07:25:52Z INFO Terminal] WRITE LINE: 
+[2025-11-19 07:25:52Z INFO Terminal] WRITE LINE: --------------------------------------------------------------------------------
+[2025-11-19 07:25:52Z INFO Terminal] WRITE LINE: |        ____ _ _   _   _       _          _        _   _                      |
+[2025-11-19 07:25:52Z INFO Terminal] WRITE LINE: |       / ___(_) |_| | | |_   _| |__      / \   ___| |_(_) ___  _ __  ___      |
+[2025-11-19 07:25:52Z INFO Terminal] WRITE LINE: |      | |  _| | __| |_| | | | | '_ \    / _ \ / __| __| |/ _ \| '_ \/ __|     |
+[2025-11-19 07:25:52Z INFO Terminal] WRITE LINE: |      | |_| | | |_|  _  | |_| | |_) |  / ___ \ (__| |_| | (_) | | | \__ \     |
+[2025-11-19 07:25:52Z INFO Terminal] WRITE LINE: |       \____|_|\__|_| |_|\__,_|_.__/  /_/   \_\___|\__|_|\___/|_| |_|___/     |
+[2025-11-19 07:25:52Z INFO Terminal] WRITE LINE: |                                                                              |
+[2025-11-19 07:25:52Z INFO Terminal] WRITE: |                       
+[2025-11-19 07:25:52Z INFO Terminal] WRITE: Self-hosted runner registration
+[2025-11-19 07:25:52Z INFO Terminal] WRITE LINE:                         |
+[2025-11-19 07:25:52Z INFO Terminal] WRITE LINE: |                                                                              |
+[2025-11-19 07:25:52Z INFO Terminal] WRITE LINE: --------------------------------------------------------------------------------
+[2025-11-19 07:25:52Z INFO ConfigurationManager] ConfigureAsync
+[2025-11-19 07:25:52Z INFO CommandSettings] Flag 'generateServiceConfig': 'False'
+[2025-11-19 07:25:52Z INFO ConfigurationStore] IsConfigured()
+[2025-11-19 07:25:52Z INFO ConfigurationStore] IsConfigured: False
+[2025-11-19 07:25:52Z INFO ConfigurationManager] Is configured: False
+[2025-11-19 07:25:52Z INFO CommandSettings] Arg 'url': 'https://github.com/mrALWYN/legal-semantic-pipeline'
+[2025-11-19 07:25:52Z INFO CommandSettings] Remove url from Arg dictionary.
+[2025-11-19 07:25:52Z INFO CommandSettings] Arg 'token': '***'
+[2025-11-19 07:25:52Z INFO CommandSettings] Remove token from Arg dictionary.
+[2025-11-19 07:25:52Z INFO ConfigurationManager] Http response code: OK from 'POST https://api.github.com/actions/runner-registration' (33CF:163BB1:142F73A:18157D6:691D7102)
+[2025-11-19 07:25:52Z INFO ConfigurationManager] Using runner-admin flow: False
+[2025-11-19 07:25:52Z INFO ConfigurationManager] cred retrieved via GitHub auth
+[2025-11-19 07:25:52Z INFO RunnerServer] EstablishVssConnection
+[2025-11-19 07:25:52Z INFO RunnerServer] Establish connection with 100 seconds timeout.
+[2025-11-19 07:25:53Z INFO GitHubActionsService] Starting operation Location.GetConnectionData
+[2025-11-19 07:25:53Z INFO RunnerServer] EstablishVssConnection
+[2025-11-19 07:25:53Z INFO RunnerServer] Establish connection with 60 seconds timeout.
+[2025-11-19 07:25:53Z INFO GitHubActionsService] Starting operation Location.GetConnectionData
+[2025-11-19 07:25:53Z INFO RunnerServer] EstablishVssConnection
+[2025-11-19 07:25:53Z INFO RunnerServer] Establish connection with 60 seconds timeout.
+[2025-11-19 07:25:53Z INFO GitHubActionsService] Starting operation Location.GetConnectionData
+[2025-11-19 07:25:53Z INFO GitHubActionsService] Finished operation Location.GetConnectionData
+[2025-11-19 07:25:53Z INFO GitHubActionsService] Finished operation Location.GetConnectionData
+[2025-11-19 07:25:54Z INFO GitHubActionsService] Finished operation Location.GetConnectionData
+[2025-11-19 07:25:54Z INFO Terminal] WRITE LINE: 
+[2025-11-19 07:25:54Z INFO ConfigurationManager] Test Connection complete.
+[2025-11-19 07:25:54Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:25:54Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:25:54Z INFO HostContext] Well known config file 'RSACredentials': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.credentials_rsaparams'
+[2025-11-19 07:25:54Z INFO RSAEncryptedFileKeyManager] Creating new RSA key using 2048-bit key length
+[2025-11-19 07:25:54Z INFO RSAEncryptedFileKeyManager] Successfully saved RSA key parameters to file D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.credentials_rsaparams
+[2025-11-19 07:25:54Z INFO CommandSettings] Arg 'runnergroup': ''
+[2025-11-19 07:25:54Z INFO CommandSettings] Flag 'unattended': 'False'
+[2025-11-19 07:25:54Z INFO PromptManager] ReadValue
+[2025-11-19 07:25:54Z INFO Terminal] WRITE: Enter the name of the runner group to add this runner to: 
+[2025-11-19 07:25:54Z INFO Terminal] WRITE: [press Enter for Default] 
+[2025-11-19 07:25:54Z INFO Terminal] READ LINE
+[2025-11-19 07:25:58Z INFO Terminal] Read value: ''
+[2025-11-19 07:25:58Z INFO PromptManager] Falling back to the default: 'Default'
+[2025-11-19 07:25:58Z INFO Terminal] WRITE LINE: 
+[2025-11-19 07:25:58Z INFO ConfigurationManager] Found a self-hosted runner group with id 1 and name Default
+[2025-11-19 07:25:58Z INFO CommandSettings] Flag 'disableupdate': 'False'
+[2025-11-19 07:25:58Z INFO CommandSettings] Flag 'ephemeral': 'False'
+[2025-11-19 07:25:58Z INFO CommandSettings] Arg 'name': ''
+[2025-11-19 07:25:58Z INFO CommandSettings] Flag 'unattended': 'False'
+[2025-11-19 07:25:58Z INFO PromptManager] ReadValue
+[2025-11-19 07:25:58Z INFO Terminal] WRITE: Enter the name of runner: 
+[2025-11-19 07:25:58Z INFO Terminal] WRITE: [press Enter for ALWYN-24] 
+[2025-11-19 07:25:58Z INFO Terminal] READ LINE
+[2025-11-19 07:25:59Z INFO Terminal] Read value: ''
+[2025-11-19 07:25:59Z INFO PromptManager] Falling back to the default: 'ALWYN-24'
+[2025-11-19 07:25:59Z INFO Terminal] WRITE LINE: 
+[2025-11-19 07:25:59Z INFO CommandSettings] Arg 'labels': ''
+[2025-11-19 07:25:59Z INFO CommandSettings] Flag 'unattended': 'False'
+[2025-11-19 07:25:59Z INFO PromptManager] ReadValue
+[2025-11-19 07:25:59Z INFO Terminal] WRITE: This runner will have the following labels: 'self-hosted', 'Windows', 'X64' 
+Enter any additional labels (ex. label-1,label-2): 
+[2025-11-19 07:25:59Z INFO Terminal] WRITE: [press Enter to skip] 
+[2025-11-19 07:25:59Z INFO Terminal] READ LINE
+[2025-11-19 07:26:04Z INFO Terminal] Read value: ''
+[2025-11-19 07:26:04Z INFO Terminal] WRITE LINE: 
+[2025-11-19 07:26:05Z INFO Terminal] WRITE LINE: A runner exists with the same name
+[2025-11-19 07:26:05Z INFO CommandSettings] Flag 'replace': 'False'
+[2025-11-19 07:26:05Z INFO CommandSettings] Flag 'unattended': 'False'
+[2025-11-19 07:26:05Z INFO PromptManager] ReadValue
+[2025-11-19 07:26:05Z INFO Terminal] WRITE: Would you like to replace the existing runner? (Y/N) 
+[2025-11-19 07:26:05Z INFO Terminal] WRITE: [press Enter for N] 
+[2025-11-19 07:26:05Z INFO Terminal] READ LINE
+[2025-11-19 07:26:10Z INFO Terminal] Read value: 'Y'
+[2025-11-19 07:26:10Z INFO CommandSettings] Flag 'disableupdate': 'False'
+[2025-11-19 07:26:10Z INFO CommandSettings] Flag 'no-default-labels': 'False'
+[2025-11-19 07:26:10Z INFO CommandSettings] Flag 'disableupdate': 'False'
+[2025-11-19 07:26:10Z INFO CommandSettings] Flag 'ephemeral': 'False'
+[2025-11-19 07:26:10Z INFO ConfigurationStore] Saving OAuth credential @ D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.credentials
+[2025-11-19 07:26:10Z INFO ConfigurationStore] Credentials Saved.
+[2025-11-19 07:26:10Z INFO ConfigurationManager] Service enforced serverUrlV2: https://broker.actions.githubusercontent.com/
+[2025-11-19 07:26:10Z INFO ConfigurationManager] Service enforced useV2Flow: True
+[2025-11-19 07:26:10Z INFO CommandSettings] Arg 'work': ''
+[2025-11-19 07:26:10Z INFO CommandSettings] Flag 'unattended': 'False'
+[2025-11-19 07:26:10Z INFO PromptManager] ReadValue
+[2025-11-19 07:26:10Z INFO Terminal] WRITE: Enter name of work folder: 
+[2025-11-19 07:26:10Z INFO Terminal] WRITE: [press Enter for _work] 
+[2025-11-19 07:26:10Z INFO Terminal] READ LINE
+[2025-11-19 07:26:28Z INFO Terminal] Read value: ''
+[2025-11-19 07:26:28Z INFO PromptManager] Falling back to the default: '_work'
+[2025-11-19 07:26:28Z INFO ConfigurationStore] Saving runner settings.
+[2025-11-19 07:26:28Z INFO ConfigurationStore] Settings Saved.
+[2025-11-19 07:26:28Z INFO Terminal] WRITE LINE: 
+[2025-11-19 07:26:28Z INFO Terminal] WRITE LINE: 
+[2025-11-19 07:26:28Z INFO CommandSettings] Flag 'runasservice': 'False'
+[2025-11-19 07:26:28Z INFO CommandSettings] Flag 'unattended': 'False'
+[2025-11-19 07:26:28Z INFO PromptManager] ReadValue
+[2025-11-19 07:26:28Z INFO Terminal] WRITE: Would you like to run the runner as service? (Y/N) 
+[2025-11-19 07:26:28Z INFO Terminal] WRITE: [press Enter for N] 
+[2025-11-19 07:26:28Z INFO Terminal] READ LINE
+[2025-11-19 07:26:32Z INFO Terminal] Read value: 'Y'
+[2025-11-19 07:26:32Z INFO ConfigurationManager] Configuring to run the agent as service
+[2025-11-19 07:26:32Z INFO CommandSettings] Arg 'windowslogonaccount': ''
+[2025-11-19 07:26:32Z INFO CommandSettings] Flag 'unattended': 'False'
+[2025-11-19 07:26:32Z INFO PromptManager] ReadValue
+[2025-11-19 07:26:32Z INFO Terminal] WRITE: User account to use for the service 
+[2025-11-19 07:26:32Z INFO Terminal] WRITE: [press Enter for NT AUTHORITY\NETWORK SERVICE] 
+[2025-11-19 07:26:32Z INFO Terminal] READ LINE
+[2025-11-19 07:26:38Z INFO Terminal] Read value: ''
+[2025-11-19 07:26:38Z INFO PromptManager] Falling back to the default: 'NT AUTHORITY\NETWORK SERVICE'
+[2025-11-19 07:26:38Z INFO WindowsServiceControlManager] LogonAccount after transforming: NT AUTHORITY\NETWORK SERVICE, user: NETWORK SERVICE, domain: NT AUTHORITY
+[2025-11-19 07:26:38Z INFO WindowsServiceControlManager] Service name 'actions.runner.mrALWYN-legal-semantic-pipeline.ALWYN-24' display name 'GitHub Actions Runner (mrALWYN-legal-semantic-pipeline.ALWYN-24)' will be used for service configuration.
+[2025-11-19 07:26:38Z INFO WindowsServiceControlManager] Verifying if the account has LogonAsService permission
+[2025-11-19 07:26:38Z INFO NativeWindowsServiceHelper] Successfully grant logon as service privilege to account 'NETWORK SERVICE'
+[2025-11-19 07:26:38Z INFO WindowsServiceControlManager] Create local group and grant folder permission to service logon account.
+[2025-11-19 07:26:38Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:26:38Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:26:38Z INFO ConfigurationStore] Read setting file: 404 chars
+[2025-11-19 07:26:38Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:26:38Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:26:38Z INFO HostContext] Well known directory 'Work': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'
+[2025-11-19 07:26:38Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:26:38Z INFO NativeWindowsServiceHelper] Calculated unique group name GITHUB_ActionsRunner_Gb7485
+[2025-11-19 07:26:38Z INFO NativeWindowsServiceHelper] Trying to create group GITHUB_ActionsRunner_Gb7485
+[2025-11-19 07:26:38Z INFO NativeWindowsServiceHelper] Local Group 'GITHUB_ActionsRunner_Gb7485' created
+[2025-11-19 07:26:38Z INFO NativeWindowsServiceHelper] Trying to add userName NT AUTHORITY\NETWORK SERVICE to the group GITHUB_ActionsRunner_Gb7485
+[2025-11-19 07:26:38Z INFO NativeWindowsServiceHelper] Account 'NT AUTHORITY\NETWORK SERVICE' is added to local group 'GITHUB_ActionsRunner_Gb7485'.
+[2025-11-19 07:26:38Z INFO NativeWindowsServiceHelper] Set full access control to group for the folder D:\project\legal-semantic-pipeline\actions-runner\actions-runner
+[2025-11-19 07:26:38Z INFO NativeWindowsServiceHelper] Set full access control to group for the folder D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work
+[2025-11-19 07:26:38Z INFO NativeWindowsServiceHelper] Local group 'GITHUB_ActionsRunner_Gb7485' already has full control to path 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\_work'.
+[2025-11-19 07:26:38Z INFO Terminal] WRITE LINE: Granting file permissions to 'NT AUTHORITY\NETWORK SERVICE'.
+[2025-11-19 07:26:38Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:26:38Z INFO ProcessInvokerWrapper] Starting process:
+[2025-11-19 07:26:38Z INFO ProcessInvokerWrapper]   File name: '"D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin\RunnerService.exe"'
+[2025-11-19 07:26:38Z INFO ProcessInvokerWrapper]   Arguments: 'init'
+[2025-11-19 07:26:38Z INFO ProcessInvokerWrapper]   Working directory: ''
+[2025-11-19 07:26:38Z INFO ProcessInvokerWrapper]   Require exit code zero: 'True'
+[2025-11-19 07:26:38Z INFO ProcessInvokerWrapper]   Encoding web name:  ; code page: ''
+[2025-11-19 07:26:38Z INFO ProcessInvokerWrapper]   Force kill process on cancellation: 'False'
+[2025-11-19 07:26:38Z INFO ProcessInvokerWrapper]   Redirected STDIN: 'False'
+[2025-11-19 07:26:38Z INFO ProcessInvokerWrapper]   Persist current code page: 'False'
+[2025-11-19 07:26:38Z INFO ProcessInvokerWrapper]   Keep redirected STDIN open: 'False'
+[2025-11-19 07:26:38Z INFO ProcessInvokerWrapper]   High priority process: 'False'
+[2025-11-19 07:26:38Z INFO ProcessInvokerWrapper] Process started with process id 14072, waiting for process exit.
+[2025-11-19 07:26:39Z INFO ProcessInvokerWrapper] STDOUT/STDERR stream read finished.
+[2025-11-19 07:26:39Z INFO ProcessInvokerWrapper] STDOUT/STDERR stream read finished.
+[2025-11-19 07:26:39Z INFO ProcessInvokerWrapper] Finished process 14072 with exit code 0, and elapsed time 00:00:00.3506045.
+[2025-11-19 07:26:39Z INFO Terminal] WRITE LINE: Service actions.runner.mrALWYN-legal-semantic-pipeline.ALWYN-24 successfully installed
+[2025-11-19 07:26:39Z INFO Terminal] WRITE LINE: Service actions.runner.mrALWYN-legal-semantic-pipeline.ALWYN-24 successfully set recovery option
+[2025-11-19 07:26:39Z INFO Terminal] WRITE LINE: Service actions.runner.mrALWYN-legal-semantic-pipeline.ALWYN-24 successfully set to delayed auto start
+[2025-11-19 07:26:39Z INFO Terminal] WRITE LINE: Service actions.runner.mrALWYN-legal-semantic-pipeline.ALWYN-24 successfully configured
+[2025-11-19 07:26:39Z INFO HostContext] Well known directory 'Bin': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\bin'
+[2025-11-19 07:26:39Z INFO HostContext] Well known directory 'Root': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner'
+[2025-11-19 07:26:39Z INFO HostContext] Well known config file 'Service': 'D:\project\legal-semantic-pipeline\actions-runner\actions-runner\.service'
+[2025-11-19 07:26:39Z INFO WindowsServiceControlManager] Configuration was successful, trying to start the service
+[2025-11-19 07:26:39Z INFO Terminal] WRITE LINE: Waiting for service to start...
+[2025-11-19 07:26:39Z INFO Terminal] WRITE LINE: Service actions.runner.mrALWYN-legal-semantic-pipeline.ALWYN-24 started successfully
+[2025-11-19 07:26:39Z INFO Listener] Runner execution has finished with return code 0

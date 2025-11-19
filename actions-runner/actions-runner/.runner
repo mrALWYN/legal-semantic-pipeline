@@ -1,0 +1,11 @@
+﻿{
+  "agentId": 22,
+  "agentName": "ALWYN-24",
+  "poolId": 1,
+  "poolName": "Default",
+  "serverUrl": "https://pipelinesghubeus25.actions.githubusercontent.com/c27bEMeq8lsDTrcVsR5z0bx6NvtyGJBeQXy4Jfd7Eoe4aM95UG/",
+  "gitHubUrl": "https://github.com/mrALWYN/legal-semantic-pipeline",
+  "workFolder": "_work",
+  "useV2Flow": true,
+  "serverUrlV2": "https://broker.actions.githubusercontent.com/"
+}
